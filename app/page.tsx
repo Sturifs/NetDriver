@@ -1,16 +1,81 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { supabase } from './supabase'
 
 export default function Home() {
+  const router = useRouter()
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [activePlan, setActivePlan] = useState<'conductor' | 'empresa'>('conductor')
   const [activeTab, setActiveTab] = useState<string>('login')
+  const [nombre, setNombre] = useState('')
+  const [apellido, setApellido] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [mensaje, setMensaje] = useState('')
 
   const openModal = (type: string) => {
     setActiveModal(type)
     setActiveTab('login')
+    setMensaje('')
   }
 
+  const handleRegistro = async () => {
+    if (!nombre || !email || !password) {
+      setMensaje('Por favor completa todos los campos.')
+      return
+    }
+    setLoading(true)
+    setMensaje('')
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nombre,
+          apellido,
+          tipo: activeModal
+        }
+      }
+    })
+    if (error) {
+      setMensaje('Error: ' + error.message)
+    } else {
+      await supabase.from('profiles').insert({
+        id: data.user?.id,
+        tipo: activeModal,
+        nombre,
+        apellido,
+        email
+      })
+      setMensaje('✅ ¡Cuenta creada! Ya puedes iniciar sesión.')
+      setActiveTab('login')
+    }
+    setLoading(false)
+  }
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setMensaje('Por favor ingresa tu correo y contraseña.')
+      return
+    }
+    setLoading(true)
+    setMensaje('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setMensaje('Error: ' + error.message)
+    } else {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: profile } = await supabase.from('profiles').select('tipo').eq('id', user?.id).single()
+      if (profile?.tipo === 'empresa') {
+        router.push('/dashboard/empresa')
+      } else {
+        router.push('/dashboard/conductor')
+      }
+    }
+    setLoading(false)
+  }
   return (
     <>
       {/* NAV */}
@@ -387,15 +452,16 @@ export default function Home() {
                 <>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Correo electrónico</label>
-                    <input type="email" placeholder="correo@ejemplo.cl" style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                    <input type="email" placeholder="correo@ejemplo.cl" value={email} onChange={e => setEmail(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
                   </div>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Contraseña</label>
-                    <input type="password" placeholder="••••••••" style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                    <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
                   </div>
-                  <button style={{ width: '100%', padding: '13px', borderRadius: '8px', background: '#1a3a5c', color: 'white', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer', marginTop: '8px' }}>
+                  <button onClick={handleLogin} disabled={loading} style={{ width: '100%', padding: '13px', borderRadius: '8px', background: '#1a3a5c', color: 'white', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer', marginTop: '8px' }}>
                     Iniciar Sesión
                   </button>
+                  {mensaje && <p style={{ fontSize: '0.85rem', color: mensaje.startsWith('✅') ? '#27ae60' : '#dc2626', marginBottom: '10px', textAlign: 'center' }}>{mensaje}</p>}
                   <div style={{ textAlign: 'center', margin: '16px 0', fontSize: '0.8rem', color: '#8fa3b8' }}>o continúa con</div>
                   <button style={{ width: '100%', padding: '13px', borderRadius: '8px', background: '#e8eef5', color: '#1a3a5c', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer' }}>
                     🌐 Google
@@ -403,29 +469,28 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Nombre</label>
-                      <input type="text" placeholder="Juan" style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                      <input type="text" placeholder="Juan" value={nombre} onChange={e => setNombre(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Apellido</label>
-                      <input type="text" placeholder="Pérez" style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                      <input type="text" placeholder="Pérez" value={apellido} onChange={e => setApellido(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
                     </div>
                   </div>
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Correo electrónico</label>
-                    <input type="email" placeholder="correo@ejemplo.cl" style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                    <input type="email" placeholder="correo@ejemplo.cl" value={email} onChange={e => setEmail(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
                   </div>
-              
                   <div style={{ marginBottom: '16px' }}>
                     <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Contraseña</label>
-                    <input type="password" placeholder="Mínimo 8 caracteres" style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                    <input type="password" placeholder="Mínimo 8 caracteres" value={password} onChange={e => setPassword(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
                   </div>
-                  <button style={{ width: '100%', padding: '13px', borderRadius: '8px', background: '#27ae60', color: 'white', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer', marginTop: '8px' }}>
-                    Crear cuenta gratis
-                  </button>
-                </>
+                  {mensaje && <p style={{ fontSize: '0.85rem', color: mensaje.startsWith('✅') ? '#27ae60' : '#dc2626', marginBottom: '10px', textAlign: 'center' }}>{mensaje}</p>}
+                  <button onClick={handleRegistro} disabled={loading} style={{ width: '100%', padding: '13px', borderRadius: '8px', background: loading ? '#8fa3b8' : '#27ae60', color: 'white', border: 'none', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 700, textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '8px' }}>
+                    {loading ? 'Creando cuenta...' : 'Crear cuenta gratis'}
+                  </button>                </>
               )}
             </div>
           </div>
