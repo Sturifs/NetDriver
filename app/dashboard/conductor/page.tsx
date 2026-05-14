@@ -74,10 +74,10 @@ export default function DashboardConductor() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7fa', fontFamily: "'Barlow', sans-serif" }}>
 
       {/* SIDEBAR */}
-      <div style={{ width: '220px', minWidth: '220px', background: '#0f2540', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh', overflowY: 'auto', zIndex: 50 }}>
+      <div style={{ width: '220px', minWidth: '220px', background: '#020D24', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh', overflowY: 'auto', zIndex: 50 }}>
         {/* Logo */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/ND_Logo.svg" alt="NetDriver" style={{ height: '40px', width: '160px', objectFit: 'contain' }} />
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '10px', background: '#020D24' }}>
+          <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '68px', width: '220px', objectFit: 'contain' }} />
         </div>
         {/* Perfil */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>

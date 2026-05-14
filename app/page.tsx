@@ -95,7 +95,7 @@ export default function Home() {
           fontSize: '1.7rem', fontWeight: 800, color: '#1a3a5c',
           textDecoration: 'none'
         }}>
-          🚛 NetDriver
+          <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '36px', objectFit: 'contain' }} />
         </a>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => openModal('conductor')} style={{
@@ -395,7 +395,7 @@ export default function Home() {
       <footer style={{ padding: '60px 5% 30px', background: '#0a1f35', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '48px', marginBottom: '48px' }}>
           <div>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.8rem', fontWeight: 800, color: 'white', marginBottom: '12px' }}>🚛 NetDriver</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.8rem', fontWeight: 800, color: 'white', marginBottom: '12px' }}><img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '36px', objectFit: 'contain' }} /></div>
             <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, maxWidth: '260px' }}>La plataforma que conecta conductores con empresas de transporte en todo Chile.</p>
           </div>
           {[
@@ -511,4 +511,277 @@ export default function Home() {
       }}>💬</a>
     </>
   )
+return (
+  <div style={{ background: '#020D24', minHeight: '100vh', fontFamily: "'Barlow', sans-serif", color: 'white' }}>
+
+    {/* NAVBAR */}
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      background: 'rgba(2,13,36,0.95)', backdropFilter: 'blur(12px)',
+      borderBottom: '1px solid rgba(37,99,235,0.2)',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 5%', height: '70px'
+    }}>
+      <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '38px', objectFit: 'contain' }} />
+      <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+        {['Inicio','Soluciones','Funciones','Planes','Contacto'].map(item => (
+          <a key={item} href="#" style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9rem', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}
+            onMouseEnter={e => (e.target as HTMLElement).style.color='white'}
+            onMouseLeave={e => (e.target as HTMLElement).style.color='rgba(255,255,255,0.75)'}
+          >{item}</a>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button onClick={() => openModal('conductor')} style={{
+          padding: '9px 20px', borderRadius: '8px', border: '1.5px solid rgba(255,255,255,0.25)',
+          background: 'transparent', color: 'white', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer'
+        }}>Iniciar Sesión</button>
+        <button onClick={() => openModal('empresa')} style={{
+          padding: '9px 20px', borderRadius: '8px', border: 'none',
+          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white',
+          fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+          boxShadow: '0 4px 15px rgba(37,99,235,0.4)'
+        }}>Solicitar Demo</button>
+      </div>
+    </nav>
+
+    {/* HERO */}
+    <section style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      padding: '100px 5% 60px',
+      background: 'radial-gradient(ellipse at 70% 50%, rgba(37,99,235,0.15) 0%, transparent 60%), radial-gradient(ellipse at 10% 80%, rgba(37,99,235,0.08) 0%, transparent 50%)',
+      position: 'relative', overflow: 'hidden'
+    }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(rgba(37,99,235,0.08) 1px, transparent 1px)', backgroundSize: '40px 40px', pointerEvents: 'none' }} />
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '60px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+        <div style={{ flex: '1', minWidth: '300px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: '20px', padding: '6px 16px', marginBottom: '24px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563eb', display: 'inline-block' }}></span>
+            <span style={{ fontSize: '0.8rem', color: '#60a5fa', fontWeight: 600, letterSpacing: '0.05em' }}>SOFTWARE PARA LOGÍSTICA DE CAMIONES</span>
+          </div>
+          <h1 style={{ fontSize: 'clamp(2.2rem, 4vw, 3.4rem)', fontWeight: 900, lineHeight: 1.1, marginBottom: '16px', fontFamily: "'Barlow Condensed', sans-serif" }}>
+            Control total.<br />
+            <span style={{ color: '#2563eb' }}>Rutas inteligentes.</span><br />
+            Resultados reales.
+          </h1>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: '36px', maxWidth: '480px' }}>
+            NetDriver es la plataforma todo-en-uno que optimiza la gestión de flotas, reduce costos y maximiza la eficiencia operativa.
+          </p>
+          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            <button onClick={() => openModal('empresa')} style={{
+              padding: '14px 28px', borderRadius: '10px', border: 'none',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white',
+              fontSize: '1rem', fontWeight: 700, cursor: 'pointer',
+              boxShadow: '0 8px 25px rgba(37,99,235,0.45)', display: 'flex', alignItems: 'center', gap: '8px'
+            }}>Solicitar Demo →</button>
+            <button onClick={() => openModal('conductor')} style={{
+              padding: '14px 28px', borderRadius: '10px',
+              border: '1.5px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)',
+              color: 'white', fontSize: '1rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
+            }}>Ver Funciones ⊙</button>
+          </div>
+          <div style={{ display: 'flex', gap: '32px', marginTop: '48px', flexWrap: 'wrap' }}>
+            {[['🔒','Seguro y Confiable','Tus datos siempre protegidos'],['☁️','Acceso en la Nube','Disponible 24/7'],['🎧','Soporte Experto','Acompañamiento dedicado']].map(([icon, title, sub]) => (
+              <div key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '1.3rem' }}>{icon}</span>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'white' }}>{title}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ flex: '1', minWidth: '300px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(37,99,235,0.25)',
+            borderRadius: '20px', padding: '24px', backdropFilter: 'blur(10px)',
+            boxShadow: '0 25px 80px rgba(37,99,235,0.2)', maxWidth: '420px', width: '100%'
+          }}>
+            <div style={{ background: 'rgba(37,99,235,0.1)', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#60a5fa', marginBottom: '12px', fontWeight: 600 }}>📊 DASHBOARD EN TIEMPO REAL</div>
+              {[['Vehículos Activos','128','+4%'],['Entregas Hoy','256','+7%'],['Eficiencia','92%','+2%'],['Alertas','7','-3']].map(([label, val, change]) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', padding: '10px 14px' }}>
+                  <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)' }}>{label}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1rem', fontWeight: 700 }}>{val}</span>
+                    <span style={{ fontSize: '0.72rem', color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: '4px' }}>{change}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: 'rgba(37,99,235,0.08)', borderRadius: '10px', padding: '14px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#60a5fa', marginBottom: '8px', fontWeight: 600 }}>🗺️ ACTIVIDAD RECIENTE</div>
+              {[['✅','Entrega completada','Ruta Norte — Hace 5 min'],['🚛','Vehículo N°12','Nuevas coordenadas — Hace 11 min'],['⚠️','Alerta de velocidad','Vehículo N°8 — Hace 18 min']].map(([icon, title, sub]) => (
+                <div key={title} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '0.9rem' }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{title}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* STATS */}
+    <section style={{ background: 'rgba(37,99,235,0.06)', borderTop: '1px solid rgba(37,99,235,0.15)', borderBottom: '1px solid rgba(37,99,235,0.15)', padding: '40px 5%' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', gap: '24px' }}>
+        {[['+500','Empresas confían en NetDriver'],['+10,000','Vehículos gestionados'],['+50M','Km recorridos optimizados'],['-20%','Reducción promedio de costos']].map(([num, label]) => (
+          <div key={label} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontWeight: 900, color: '#2563eb', fontFamily: "'Barlow Condensed', sans-serif" }}>{num}</div>
+            <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.55)', marginTop: '4px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* FUNCIONES */}
+    <section style={{ padding: '90px 5%' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '12px' }}>NUESTRAS SOLUCIONES</div>
+          <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif" }}>Todo lo que tu operación necesita,<br /><span style={{ color: '#2563eb' }}>en un solo lugar</span></h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+          {[
+            ['🚛','Gestión de Flotas','Administra tus vehículos, conductores y activos de manera eficiente.'],
+            ['📍','Rastreo GPS','Monitorea en tiempo real la ubicación y recorrido de cada unidad.'],
+            ['🗺️','Optimización de Rutas','Ahorra tiempo y combustible con rutas inteligentes y dinámicas.'],
+            ['📦','Entregas y Órdenes','Gestiona órdenes de entrega, asignaciones y estados en tiempo real.'],
+            ['🔧','Mantenimiento','Programa mantenimientos y recibe alertas para evitar fallas costosas.'],
+            ['📊','Reportes Avanzados','Visualiza el rendimiento de tu operación con reportes detallados.']
+          ].map(([icon, title, desc]) => (
+            <div key={title} style={{
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(37,99,235,0.15)',
+              borderRadius: '16px', padding: '28px 24px', transition: 'all 0.3s',
+              cursor: 'default'
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.border = '1px solid rgba(37,99,235,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(37,99,235,0.07)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.border = '1px solid rgba(37,99,235,0.15)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
+            >
+              <div style={{ fontSize: '2rem', marginBottom: '16px' }}>{icon}</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '8px' }}>{title}</div>
+              <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* PLANES */}
+    <section style={{ padding: '90px 5%', background: 'rgba(255,255,255,0.01)' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '12px' }}>PLANES FLEXIBLES PARA CADA NECESIDAD</div>
+          <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 800, fontFamily: "'Barlow Condensed', sans-serif" }}>Elige el plan perfecto<br /><span style={{ color: '#2563eb' }}>para tu operación</span></h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'start' }}>
+          {[
+            { name: 'Básico', price: '29', color: '#34d399', features: ['Gestión de flotas','Rastreo en tiempo real','Informes básicos','Soporte por email'], popular: false },
+            { name: 'Profesional', price: '59', color: '#2563eb', features: ['Todo lo del plan Básico','Optimización de rutas','Reportes avanzados','Alertas y notificaciones','Soporte prioritario'], popular: true },
+            { name: 'Empresarial', price: '99', color: '#a855f7', features: ['Todo lo del plan Profesional','Integración ERP','Análisis personalizado','Usuarios ilimitados','Soporte 24/7 dedicado'], popular: false }
+          ].map(plan => (
+            <div key={plan.name} style={{
+              background: plan.popular ? 'linear-gradient(135deg, rgba(37,99,235,0.2), rgba(37,99,235,0.08))' : 'rgba(255,255,255,0.03)',
+              border: plan.popular ? '1.5px solid rgba(37,99,235,0.6)' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '20px', padding: '32px 28px', position: 'relative'
+            }}>
+              {plan.popular && <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white', fontSize: '0.72rem', fontWeight: 700, padding: '5px 16px', borderRadius: '20px', letterSpacing: '0.05em' }}>MÁS POPULAR</div>}
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: plan.color, marginBottom: '8px' }}>{plan.name}</div>
+              <div style={{ marginBottom: '24px' }}>
+                <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>USD </span>
+                <span style={{ fontSize: '2.8rem', fontWeight: 900, fontFamily: "'Barlow Condensed', sans-serif" }}>${plan.price}</span>
+                <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}> /mes</span>
+              </div>
+              <div style={{ marginBottom: '28px' }}>
+                {plan.features.map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
+                    <span style={{ color: plan.color }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => openModal('empresa')} style={{
+                width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                background: plan.popular ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : 'transparent',
+                border: plan.popular ? 'none' : `1.5px solid ${plan.color}`,
+                color: plan.popular ? 'white' : plan.color,
+                boxShadow: plan.popular ? '0 8px 25px rgba(37,99,235,0.4)' : 'none'
+              }}>Elegir Plan</button>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)' }}>
+          ✓ Sin contratos forzosos. Cancela cuando quieras.
+        </div>
+      </div>
+    </section>
+
+    {/* FOOTER */}
+    <footer style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '40px 5%' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+        <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '32px', objectFit: 'contain' }} />
+        <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.35)' }}>© 2026 NetDriver. Todos los derechos reservados.</div>
+        <div style={{ display: 'flex', gap: '24px' }}>
+          {['Términos','Privacidad','Contacto'].map(item => (
+            <a key={item} href="#" style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}>{item}</a>
+          ))}
+        </div>
+      </div>
+    </footer>
+
+    {/* MODALES LOGIN/REGISTRO */}
+    {activeModal && (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '20px' }}>
+        <div style={{ background: '#0d1f3c', border: '1px solid rgba(37,99,235,0.3)', borderRadius: '20px', padding: '36px', width: '100%', maxWidth: '420px', position: 'relative' }}>
+          <button onClick={() => setActiveModal(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.4rem', cursor: 'pointer' }}>×</button>
+          <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '34px', objectFit: 'contain', marginBottom: '20px' }} />
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '4px' }}>
+            {['login','registro'].map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab as 'login' | 'registro')} style={{
+                flex: 1, padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem',
+                background: activeTab === tab ? '#2563eb' : 'transparent',
+                color: activeTab === tab ? 'white' : 'rgba(255,255,255,0.5)'
+              }}>{tab === 'login' ? 'Iniciar Sesión' : 'Registrarse'}</button>
+            ))}
+          </div>
+          {activeTab === 'registro' && (
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '4px' }}>
+              {(['conductor','empresa'] as const).map(plan => (
+                <button key={plan} onClick={() => setActivePlan(plan)} style={{
+                  flex: 1, padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+                  background: activePlan === plan ? 'rgba(37,99,235,0.4)' : 'transparent',
+                  color: activePlan === plan ? 'white' : 'rgba(255,255,255,0.5)'
+                }}>{plan === 'conductor' ? '🚛 Conductor' : '🏢 Empresa'}</button>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {activeTab === 'registro' && activePlan === 'empresa' && (
+              <input value={nombreEmpresa} onChange={e => setNombreEmpresa(e.target.value)} placeholder="Nombre de la empresa" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+            )}
+            {activeTab === 'registro' && (
+              <>
+                <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+                <input value={apellido} onChange={e => setApellido(e.target.value)} placeholder="Apellido" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+              </>
+            )}
+            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+            <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" type="password" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+            {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#f87171' : '#34d399', textAlign: 'center' }}>{mensaje}</div>}
+            <button onClick={activeTab === 'login' ? handleLogin : handleRegistro} disabled={loading} style={{
+              padding: '13px', borderRadius: '10px', border: 'none', marginTop: '4px',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', color: 'white',
+              fontSize: '0.95rem', fontWeight: 700, cursor: loading ? 'wait' : 'pointer',
+              boxShadow: '0 8px 25px rgba(37,99,235,0.4)'
+            }}>{loading ? 'Procesando...' : activeTab === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}</button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+)
 }
