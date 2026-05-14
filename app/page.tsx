@@ -9,6 +9,7 @@ export default function Home() {
   const [activePlan, setActivePlan] = useState<'conductor' | 'empresa'>('conductor')
   const [activeTab, setActiveTab] = useState<string>('login')
   const [nombre, setNombre] = useState('')
+  const [nombreEmpresa, setNombreEmpresa] = useState('')
   const [apellido, setApellido] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,7 +48,8 @@ export default function Home() {
         tipo: activeModal,
         nombre,
         apellido,
-        email
+        email,
+        nombre_empresa: activeModal === 'empresa' ? nombreEmpresa : null
       })
       setMensaje('✅ ¡Cuenta creada! Ya puedes iniciar sesión.')
       setActiveTab('login')
@@ -477,6 +479,7 @@ export default function Home() {
                     <div>
                       <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '5px', textTransform: 'uppercase' }}>Apellido</label>
                       <input type="text" placeholder="Pérez" value={apellido} onChange={e => setApellido(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c' }} />
+                <input type="text" placeholder="Nombre de la empresa (ej: Transportes Del Norte SpA)" value={nombreEmpresa} onChange={e => setNombreEmpresa(e.target.value)} style={{ width: '100%', padding: '11px 13px', borderRadius: '8px', border: '2px solid #e8eef5', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', outline: 'none', color: '#1a3a5c', marginTop: '10px' }} />
                     </div>
                   </div>
                   <div style={{ marginBottom: '16px' }}>

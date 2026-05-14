@@ -76,8 +76,8 @@ export default function DashboardConductor() {
       {/* SIDEBAR */}
       <div style={{ width: '220px', minWidth: '220px', background: '#0f2540', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh', overflowY: 'auto', zIndex: 50 }}>
         {/* Logo */}
-        <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'white' }}>🚛 NetDriver</span>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/ND_Logo.svg" alt="NetDriver" style={{ height: '40px', width: '160px', objectFit: 'contain' }} />
         </div>
         {/* Perfil */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
