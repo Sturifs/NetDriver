@@ -266,18 +266,18 @@ export default function Home() {
     </section>
 
     <section style={{ background: '#020D24', padding: '56px 40px' }}>
-      <div style={{ maxWidth: '860px', margin: '0 auto', background: 'rgba(7,26,62,0.85)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '16px', padding: '36px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '28px', flexWrap: 'wrap' }}>
+      <div style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '18px', textAlign: 'center', color: 'white' }}>🤝 PROGRAMA DE <span style={{ color: '#22c55e' }}>REFERIDOS</span></div>
+        <div style={{ maxWidth: '860px', margin: '0 auto', background: 'rgba(7,26,62,0.85)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '16px', padding: '36px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '28px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div style={{ fontSize: '2.8rem' }}>🤝</div>
           <div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '6px' }}>PROGRAMA DE <span style={{ color: '#22c55e' }}>REFERIDOS</span></div>
             <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)' }}>Invita a otros conductores y obtén meses premium gratis.</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e' }}>5</div><div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>AMIGOS REFERIDOS</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e' }}>3</div><div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>AMIGOS REFERIDOS</div></div>
           <div style={{ fontSize: '1.4rem', color: 'rgba(255,255,255,0.35)' }}>→</div>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e' }}>6</div><div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>MESES PREMIUM GRATIS</div></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e' }}>3</div><div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>MESES PREMIUM GRATIS</div></div>
           <button onClick={() => openModal('conductor')} style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Únete y empieza a referir →</button>
         </div>
       </div>
