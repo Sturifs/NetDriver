@@ -208,7 +208,7 @@ export default function Home() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', maxWidth: '920px', margin: '0 auto' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px', paddingBottom: '14px', borderBottom: '2px solid #e2e8f0' }}>
-            <span>👤</span><span style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em' }}>PARA CONDUCTORES</span>
+            <span>👤</span><span style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em', color: '#2563eb' }}>PARA CONDUCTORES</span>
           </div>
           {[['01','Crea tu perfil','Regístrate gratis y carga tu experiencia, licencias y disponibilidad.'],['02','Genera tu CV gratis 📄','Crea tu CV profesional y descárgalo. Plan Premium sin sello de agua.'],['03','Postula y acepta Pegas Relámpago ⚡','Accede a ofertas de trabajo en transporte y logística en todo Chile.'],['04','Recibe alertas 🔔','Alertas por correo o WhatsApp antes de que venzan tus documentos.']].map(([num,title,desc]) => (
             <div key={num} style={{ display: 'flex', gap: '18px', marginBottom: '26px' }}>
@@ -219,7 +219,7 @@ export default function Home() {
         </div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px', paddingBottom: '14px', borderBottom: '2px solid #e2e8f0' }}>
-            <span>🏢</span><span style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em' }}>PARA EMPRESAS</span>
+            <span>🏢</span><span style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em', color: '#22c55e' }}>PARA EMPRESAS</span>
           </div>
           {[['01','Registra tu empresa','Crea una cuenta empresarial y comienza a usar la plataforma.'],['02','Publica ofertas de trabajo','Sube tus vacantes y recibe postulaciones de conductores verificados.'],['03','Certifica tus equipos 🛡️','Registra y certifica tu flota de vehículos y maquinaria.'],['04','Acceso ilimitado con Plan Pro','Búsqueda ilimitada y pretensiones de renta de candidatos.']].map(([num,title,desc]) => (
             <div key={num} style={{ display: 'flex', gap: '18px', marginBottom: '26px' }}>
@@ -255,7 +255,7 @@ export default function Home() {
           <div style={{ position: 'absolute', top: '18px', right: '18px', background: '#22c55e', color: 'white', fontSize: '0.68rem', fontWeight: 700, padding: '4px 12px', borderRadius: '20px' }}>MÁS POPULAR</div>
           <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '10px' }}>CONDUCTOR / OPERADOR</div>
           <div style={{ fontWeight: 900, fontSize: '1rem', color: 'white', marginBottom: '6px' }}>PLAN PREMIUM</div>
-          <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#22c55e', marginBottom: '4px' }}>$4.990</div>
+          <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#22c55e', marginBottom: '4px' }}>$2.000</div>
           <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.48)', marginBottom: '22px' }}>por mes - cancela cuando quieras</div>
           {['Postulaciones ilimitadas','Pegas Relámpago ⚡ ilimitadas','CV sin sello de agua','Sello NetDriver Verificado ✓','Mayor visibilidad','Pretensión de renta visible para empresas Pro','Soporte prioritario'].map(f => (
             <div key={f} style={{ display: 'flex', gap: '8px', marginBottom: '9px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}><span style={{ color: '#22c55e', fontWeight: 700 }}>✓</span>{f}</div>
