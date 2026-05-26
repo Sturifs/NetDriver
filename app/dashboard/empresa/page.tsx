@@ -79,7 +79,7 @@ export default function DashboardEmpresa() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7fa', fontFamily: 'sans-serif' }}>
       <div style={{ width: '230px', minWidth: '230px', background: '#020D24', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh', overflowY: 'auto', zIndex: 50 }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '10px', background: '#020D24' }}>
-          <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '68px', width: '220px', objectFit: 'contain' }} />
+          <img src="/NetDriver_Logo.png" alt="NetDriver" onClick={() => router.push('/')} style={{ height: '68px', width: '220px', objectFit: 'contain', cursor: 'pointer' }} />
         </div>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ width: '52px', height: '52px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', flexShrink: 0 }}>

@@ -1,10 +1,32 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 
 export default function Home() {
   const router = useRouter()
+  const [usuarioActivo, setUsuarioActivo] = useState<any>(null)
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.from('profiles').select('nombre').eq('id', session.user.id).single().then(({ data }) => {
+          setUsuarioActivo(data?.nombre || session.user.email)
+        })
+      }
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        supabase.from('profiles').select('nombre').eq('id', session.user.id).single().then(({ data }) => {
+          setUsuarioActivo(data?.nombre || session.user.email)
+        })
+      } else {
+        setUsuarioActivo(null)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   const [activeModal, setActiveModal] = useState<string | null>(null)
   const [activePlan, setActivePlan] = useState<'conductor' | 'empresa'>('conductor')
   const [activeTab, setActiveTab] = useState<string>('login')
@@ -88,9 +110,21 @@ export default function Home() {
           <span key={item} style={{ color: 'rgba(255,255,255,0.72)', fontSize: '0.88rem', cursor: 'pointer' }}>{item}</span>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={() => window.scrollTo({ top: (document.getElementById('planes')?.offsetTop ?? 0) - 80, behavior: 'smooth' })} style={{ padding: '13px 32px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}>Regístrate aquí</button>
-      </div>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            {usuarioActivo ? (
+              <div style={{ position: 'relative' }}>
+                <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer' }}>👤 {usuarioActivo} ▾</button>
+                {menuAbierto && (
+                  <div style={{ position: 'absolute', top: '110%', right: 0, background: '#0d1f3c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', minWidth: '180px', zIndex: 999, overflow: 'hidden' }}>
+                    <button onClick={() => { router.push('/dashboard'); setMenuAbierto(false) }} style={{ width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', color: 'white', fontSize: '0.88rem', cursor: 'pointer' }}>Ver mi panel</button>
+                    <button onClick={async () => { await supabase.auth.signOut(); setUsuarioActivo(null); setMenuAbierto(false) }} style={{ width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', color: '#22c55e', fontSize: '0.88rem', cursor: 'pointer' }}>Cerrar sesión</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button onClick={() => openModal('conductor')} style={{ padding: '13px 32px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}>Inicia Sesión</button>
+            )}
+          </div>
     </nav>
 
     <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', padding: '80px 40px 40px', position: 'relative', background: 'url(/truck_bg.png) center center / cover no-repeat', backgroundBlendMode: 'overlay' }}>
