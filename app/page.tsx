@@ -1,4 +1,5 @@
 'use client'
+// @ts-ignore
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
@@ -37,6 +38,12 @@ export default function Home() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [mensaje, setMensaje] = useState('')
+
+  useEffect(() => {
+    const handler = (e: any) => openModal(e.detail)
+    window.addEventListener('openModal', handler)
+    return () => window.removeEventListener('openModal', handler)
+  }, [])
 
   const openModal = (type: string) => {
     setActiveModal(type)
@@ -106,8 +113,12 @@ export default function Home() {
     <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: '85px', background: 'rgba(2,13,36,0.98)', borderBottom: '1px solid rgba(255,255,255,0.08)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
       <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '75px', objectFit: 'contain' }} />
       <div style={{ display: 'flex', gap: '32px' }}>
-        {['Cómo funciona','Planes','Para empresas','Referidos','Recursos'].map(item => (
-          <span key={item} style={{ color: 'rgba(255,255,255,0.72)', fontSize: '0.88rem', cursor: 'pointer' }}>{item}</span>
+        {['Cómo funciona','Planes','Referidos'].map(item => (
+          <span key={item} onClick={() => {
+                if(item === 'Cómo funciona') router.push('/como-funciona')
+                if(item === 'Planes') document.getElementById('planes')?.scrollIntoView({behavior:'smooth'})
+                if(item === 'Referidos') document.getElementById('referidos')?.scrollIntoView({behavior:'smooth'})
+              }} style={{ color: 'rgba(255,255,255,0.72)', fontSize: '0.88rem', cursor: 'pointer' }}>{item}</span>
         ))}
       </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -315,23 +326,104 @@ export default function Home() {
 )}
     </section>
 
-    <section style={{ background: '#020D24', padding: '56px 40px' }}>
-      <div style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '18px', textAlign: 'center', color: 'white' }}>🤝 PROGRAMA DE <span style={{ color: '#22c55e' }}>REFERIDOS</span></div>
-        <div style={{ maxWidth: '860px', margin: '0 auto', background: 'rgba(7,26,62,0.85)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '16px', padding: '36px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '28px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ fontSize: '2.8rem' }}>🤝</div>
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)' }}>Invita a otros conductores y obtén meses premium gratis.</div>
+
+      <section id='referidos' style={{ background: '#020D1A', padding: '56px 40px', color: 'white' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+          {/* TÍTULO */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
+            <i className="ti ti-arrows-exchange" style={{ fontSize: '1.6rem', color: '#22c55e' }}></i>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'white', margin: 0 }}>
+              PROGRAMA DE <span style={{ color: '#22c55e' }}>REFERIDOS</span>
+            </h2>
           </div>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.55)', fontSize: '0.95rem', marginBottom: '40px' }}>
+            Invita a otros conductores y obtén meses premium gratis.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
+
+            {/* LADO IZQUIERDO - pasos */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '32px' }}>
+                {/* PASO 1 */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                  <div style={{ background: 'rgba(34,197,94,0.15)', border: '2px solid #22c55e', borderRadius: '50%', width: '72px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                    <i className="ti ti-share" style={{ fontSize: '2rem', color: '#22c55e' }}></i>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '6px', textAlign: 'center' }}>1. Comparte tu link</div>
+                  <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem', textAlign: 'center', lineHeight: 1.5 }}>Envía tu link de referido a otros conductores.</div>
+                </div>
+
+                <div style={{ color: '#22c55e', fontSize: '1.5rem', marginTop: '24px', flexShrink: 0 }}>→</div>
+
+                {/* PASO 2 */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                  <div style={{ background: 'rgba(34,197,94,0.15)', border: '2px solid #22c55e', borderRadius: '50%', width: '72px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                    <i className="ti ti-users-group" style={{ fontSize: '2rem', color: '#22c55e' }}></i>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '6px', textAlign: 'center' }}>2. Ellos se registran</div>
+                  <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem', textAlign: 'center', lineHeight: 1.5 }}>Tus amigos se registran en NetDriver.</div>
+                </div>
+
+                <div style={{ color: '#22c55e', fontSize: '1.5rem', marginTop: '24px', flexShrink: 0 }}>→</div>
+
+                {/* PASO 3 */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+                  <div style={{ background: 'rgba(34,197,94,0.15)', border: '2px solid #22c55e', borderRadius: '50%', width: '72px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                    <i className="ti ti-award" style={{ fontSize: '2rem', color: '#22c55e' }}></i>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '6px', textAlign: 'center' }}>3. Ambos ganan</div>
+                  <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem', textAlign: 'center', lineHeight: 1.5 }}>Cuando acumulen 3 amigos activos, ambos reciben 3 meses premium gratis.</div>
+                </div>
+              </div>
+
+              {/* BENEFICIOS */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '28px', marginTop: '8px' }}>
+                {[
+                  { icon: 'ti-gift', title: 'Sin límites', desc: 'Puedes referir a todos los que quieras.' },
+                  { icon: 'ti-shield-check', title: 'Para todos', desc: 'Aplica para conductores gratuitos y premium.' },
+                  { icon: 'ti-clock', title: 'Meses acumulables', desc: 'Tus meses ganados se suman a tu suscripción actual.' },
+                ].map(item => (
+                  <div key={item.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <i className={`ti ${item.icon}`} style={{ fontSize: '3.5rem', color: 'rgba(255,255,255,0.4)', flexShrink: 0, marginTop: '2px' }}></i>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '4px' }}>{item.title}</div>
+                      <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.82rem', lineHeight: 1.5 }}>{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+
+            {/* LADO DERECHO - progreso */}
+            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '28px 32px', minWidth: '220px', textAlign: 'center', marginLeft: 'auto' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.05em', marginBottom: '24px' }}>TU PROGRESO</div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '28px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ background: 'transparent', border: '3px solid #22c55e', borderRadius: '50%', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', fontSize: '1.8rem', fontWeight: 900, color: '#22c55e' }}>3</div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>AMIGOS<br/>REFERIDOS</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ background: 'transparent', border: '3px solid #22c55e', borderRadius: '50%', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px', fontSize: '1.8rem', fontWeight: 900, color: '#22c55e' }}>3</div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>MESES PREMIUM<br/>GANADOS</div>
+                </div>
+              </div>
+              <button onClick={() => openModal('registro')} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <i className="ti ti-share" style={{ fontSize: '1.1rem' }}></i>
+                Invitar ahora
+              </button>
+            </div>
+
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '32px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>
+            Comienza gratis, refiere y accede a <span style={{ color: '#22c55e', fontWeight: 700 }}>más beneficios.</span>
+          </div>
+
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e' }}>3</div><div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>AMIGOS REFERIDOS</div></div>
-          <div style={{ fontSize: '1.4rem', color: 'rgba(255,255,255,0.35)' }}>→</div>
-          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', fontWeight: 900, color: '#22c55e' }}>3</div><div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>MESES PREMIUM GRATIS</div></div>
-          <button onClick={() => openModal('conductor')} style={{ padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Únete y empieza a referir →</button>
-        </div>
-      </div>
-    </section>
+      </section>
 
     <footer style={{ background: '#020D24', borderTop: '1px solid rgba(255,255,255,0.07)', padding: '52px 40px 24px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '36px', maxWidth: '1100px', margin: '0 auto 36px' }}>
