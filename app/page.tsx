@@ -273,6 +273,7 @@ export default function Home() {
           <button onClick={() => setActivePlan('empresa')} style={{ padding: '9px 28px', borderRadius: '6px', border: 'none', background: activePlan === 'empresa' ? '#1e3a5f' : 'transparent', color: activePlan === 'empresa' ? 'white' : '#94a3b8', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>EMPRESA</button>
         </div>
       </div>
+{activePlan === 'conductor' && (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '820px', margin: '0 auto' }}>
         <div style={{ background: 'white', borderRadius: '16px', padding: '30px', border: '1px solid #e2e8f0' }}>
           <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '10px' }}>CONDUCTOR / OPERADOR</div>
@@ -296,6 +297,23 @@ export default function Home() {
           <button onClick={() => openModal('conductor')} style={{ width: '100%', padding: '13px', marginTop: '22px', borderRadius: '9px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 700, cursor: 'pointer' }}>Suscribirse ahora</button>
         </div>
       </div>
+)}
+{activePlan === 'empresa' && (
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', maxWidth: '820px', margin: '0 auto' }}>
+    <div style={{ background: '#0d1f3c', borderRadius: '16px', padding: '30px', border: '1px solid rgba(34,197,94,0.2)' }}>
+      <div style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '10px' }}>EMPRESA</div>
+      <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'white', marginBottom: '6px' }}>PLAN EMPRESA</div>
+      <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)', marginBottom: '20px' }}>Para empresas que buscan crecer y optimizar su contratación.</div>
+      <hr style={{ borderColor: 'rgba(255,255,255,0.1)', marginBottom: '20px' }} />
+      {['Publicaciones ilimitadas','Buscar/publicar arriendos de maquinaria ilimitados','Filtros y búsqueda avanzada de conductores','Acceso a conductores verificados ilimitados','Panel de control completo','Reportes y estadísticas avanzadas','Soporte prioritario dedicado','Asesoría personalizada'].map(f => (
+        <div key={f} style={{ display: 'flex', gap: '8px', marginBottom: '9px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}><span style={{ color: '#2563eb', fontWeight: 700 }}>✓</span>{f}</div>
+      ))}
+      <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '20px 0 10px' }} />
+      <div style={{ textAlign: 'center', fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)', marginBottom: '16px' }}>Precio personalizado según tus necesidades</div>
+      <button onClick={() => openModal('conductor')} style={{ width: '100%', padding: '13px', borderRadius: '9px', border: 'none', background: '#2563eb', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem' }}>💬 Contáctanos para realizar una cotización</button>
+    </div>
+  </div>
+)}
     </section>
 
     <section style={{ background: '#020D24', padding: '56px 40px' }}>
