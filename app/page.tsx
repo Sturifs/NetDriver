@@ -40,7 +40,7 @@ export default function Home() {
 
   const openModal = (type: string) => {
     setActiveModal(type)
-    setActiveTab('login')
+    setActiveTab(type === 'registro' ? 'registro' : 'login')
     setMensaje('')
   }
 
@@ -115,14 +115,14 @@ export default function Home() {
               <div style={{ position: 'relative' }}>
                 <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)', color: 'white', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer' }}>👤 {usuarioActivo} ▾</button>
                 {menuAbierto && (
-                  <div style={{ position: 'absolute', top: '110%', right: 0, background: '#0d1f3c', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', minWidth: '180px', zIndex: 999, overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: '110%', right: 0, background: '#010a18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', minWidth: '180px', zIndex: 999, overflow: 'hidden' }}>
                     <button onClick={() => { router.push('/dashboard'); setMenuAbierto(false) }} style={{ width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', color: 'white', fontSize: '0.88rem', cursor: 'pointer' }}>Ver mi panel</button>
                     <button onClick={async () => { await supabase.auth.signOut(); setUsuarioActivo(null); setMenuAbierto(false) }} style={{ width: '100%', padding: '12px 16px', textAlign: 'left', background: 'none', border: 'none', color: '#22c55e', fontSize: '0.88rem', cursor: 'pointer' }}>Cerrar sesión</button>
                   </div>
                 )}
               </div>
             ) : (
-              <button onClick={() => openModal('conductor')} style={{ padding: '13px 32px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}>Inicia Sesión</button>
+              <button onClick={() => openModal('login')} style={{ padding: '13px 32px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}>Inicia Sesión</button>
             )}
           </div>
     </nav>
@@ -141,8 +141,7 @@ export default function Home() {
         </h1>
         <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.62)', lineHeight: 1.65, marginBottom: '30px' }}>Conductores, operadores y empresas conectados en una sola plataforma.</p>
         <div style={{ display: 'flex', gap: '12px', marginBottom: '44px' }}>
-          <button onClick={() => openModal('conductor')} style={{ padding: '13px 28px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}>Soy Conductor →</button>
-          <button onClick={() => openModal('empresa')} style={{ padding: '13px 28px', borderRadius: '8px', border: '1.5px solid rgba(255,255,255,0.28)', background: 'transparent', color: 'white', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>Soy Empresa</button>
+          <button onClick={() => openModal('registro')} style={{ padding: '13px 32px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}>Regístrate aquí</button>
         </div>
         <div style={{ display: 'flex', gap: '40px' }}>
           {[['+2.400','Conductores'],['+380','Empresas'],['15','Regiones']].map(([num,lbl]) => (
@@ -300,7 +299,7 @@ export default function Home() {
 )}
 {activePlan === 'empresa' && (
   <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', maxWidth: '820px', margin: '0 auto' }}>
-    <div style={{ background: '#0d1f3c', borderRadius: '16px', padding: '30px', border: '1px solid rgba(34,197,94,0.2)' }}>
+    <div style={{ background: '#010a18', borderRadius: '16px', padding: '30px', border: '1px solid rgba(34,197,94,0.2)' }}>
       <div style={{ fontSize: '0.7rem', color: '#2563eb', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '10px' }}>EMPRESA</div>
       <div style={{ fontWeight: 900, fontSize: '1.5rem', color: 'white', marginBottom: '6px' }}>PLAN EMPRESA</div>
       <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.55)', marginBottom: '20px' }}>Para empresas que buscan crecer y optimizar su contratación.</div>
@@ -355,12 +354,12 @@ export default function Home() {
 
     {activeModal && (
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999, padding: '20px' }}>
-        <div style={{ background: '#0d1f3c', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '20px', padding: '36px', width: '100%', maxWidth: '420px', position: 'relative' }}>
+        <div style={{ background: '#010a18', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '20px', padding: '36px', width: '100%', maxWidth: '420px', position: 'relative' }}>
           <button onClick={() => setActiveModal(null)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
-          <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '30px', objectFit: 'contain', marginBottom: '22px' }} />
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '22px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '4px' }}>
+          <img src="/NetDriver_Logo.png" alt="NetDriver" style={{ height: '60px', objectFit: 'contain', marginBottom: '22px' }} />
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '22px' }}>
             {['login','registro'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab as 'login' | 'registro')} style={{ flex: 1, padding: '9px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem', background: activeTab === tab ? '#22c55e' : 'transparent', color: activeTab === tab ? 'white' : 'rgba(255,255,255,0.5)' }}>{tab === 'login' ? 'Iniciar Sesión' : 'Registrarse'}</button>
+              <button key={tab} onClick={() => setActiveTab(tab as 'login' | 'registro')} style={{ flex: 1, padding: '9px', borderRadius: '8px', border: activeTab == tab ? 'none' : '1px solid rgba(255,255,255,0.35)', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem', background: activeTab === tab ? '#22c55e' : 'transparent', color: activeTab === tab ? 'white' : 'rgba(255,255,255,0.5)' }}>{tab === 'login' ? 'Iniciar Sesión' : 'Registrarse'}</button>
             ))}
           </div>
           {activeTab === 'registro' && (
