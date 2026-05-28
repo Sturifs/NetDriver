@@ -10,7 +10,7 @@ export default function ComoFunciona() {
   const router = useRouter()
 
   const Card = ({ num, icon, title, desc, highlight }: { num: number, icon: string, title: string, desc: string, highlight?: string }) => (
-    <div style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', padding: '24px 18px 20px', position: 'relative', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
+    <div style={{ background: 'rgba(2,14,32,0.85)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '14px', padding: '24px 18px 20px', position: 'relative', display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
       <div style={{ position: 'absolute', top: '-14px', left: '16px', background: '#22c55e', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', color: 'white' }}>{num}</div>
       <i className={`ti ${icon}`} style={{ position: 'absolute', top: '16px', right: '16px', fontSize: '3rem', color: '#6b8cba' }} aria-hidden="true"></i>
       <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white', lineHeight: 1.3, marginTop: '32px' }}>{title}</div>
@@ -25,14 +25,14 @@ export default function ComoFunciona() {
       <div style={{ background: '#020D24', minHeight: '100vh', color: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
 
         {/* NAVBAR */}
-        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px 0 0', height: '85px', marginLeft: '-12px', borderBottom: '1px solid rgba(255,255,255,0.3)', position: 'sticky', top: 0, background: '#020D24', zIndex: 100 }}>
+        <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px 0 0', height: '85px', marginLeft: '-12px', borderBottom: '1px solid rgba(255,255,255,0.12)', position: 'sticky', top: 0, background: '#020D24', zIndex: 100 }}>
           <div onClick={() => router.push('/')} style={{ cursor: 'pointer', marginTop: '3px', marginLeft: '3px' }}>
             <Image src="/NetDriver_Logo.png" alt="NetDriver" width={300} height={75} style={{ objectFit: 'contain' }} />
           </div>
           <button onClick={() => router.push('/')} style={{ padding: '10px 24px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'white', cursor: 'pointer', fontSize: '0.9rem' }}>← Volver al inicio</button>
         </nav>
 
-        <div style={{ position: 'relative', background: "url('/camion_como_funciona_oficial.png') top center / cover no-repeat", padding: '80px 40px 60px' }}>
+        <div style={{ position: 'relative', background: "url('/camion_como_funciona_oficial.png') 50% 20% / cover no-repeat", padding: '80px 40px 60px' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,14,32,1) 0%, rgba(2,14,32,0) 30%, rgba(2,14,32,0) 70%, rgba(2,14,32,0.1) 100%), linear-gradient(to bottom, rgba(2,14,32,0) 60%, rgba(2,14,32,1) 100%), linear-gradient(to top, rgba(2,14,32,0) 85%, rgba(2,14,32,1) 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '1100px', margin: '0 auto 0 0', paddingLeft: '40px' }}>
 
@@ -110,7 +110,7 @@ export default function ComoFunciona() {
                   {icon:'ti-headset',title:'Soporte real',desc:'Estamos contigo en cada viaje.'},
                   {icon:'ti-trending-up',title:'Crece con nosotros',desc:'Más viajes completados mejoran tu reputación y te dan acceso a mejores cargas.'},
                 ].map(item => (
-                  <div key={item.title} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.18)', borderRadius: '12px', padding: '24px 16px', border: '1px solid rgba(255,255,255,0.3)' }}>
+                  <div key={item.title} style={{ textAlign: 'center', background: 'rgba(2,14,32,0.85)', borderRadius: '12px', padding: '24px 16px', border: '1px solid rgba(255,255,255,0.12)' }}>
                     <i className={`ti ${item.icon}`} style={{ fontSize: '2.2rem', color: '#22c55e' }} aria-hidden="true"></i>
                     <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: '6px', marginTop: '10px' }}>{item.title}</div>
                     <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', lineHeight: 1.5 }}>{item.desc}</div>
@@ -142,7 +142,7 @@ export default function ComoFunciona() {
                   <h2 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.2, marginBottom: '16px' }}>¿Cómo funciona<br /><span style={{ color: '#22c55e' }}>NetDriver</span> para<br />Empresas?</h2>
                   <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem', lineHeight: 1.6 }}>La plataforma todo en uno que impulsa tu operación: conductores, maquinarias y oportunidades, en un solo lugar.</p>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.18)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ background: 'rgba(2,14,32,0.85)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ background: 'rgba(34,197,94,0.15)', borderRadius: '50%', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <i className="ti ti-building" style={{ fontSize: '1.8rem', color: '#22c55e' }} aria-hidden="true"></i>
                   </div>
@@ -215,7 +215,7 @@ export default function ComoFunciona() {
                   {icon:'ti-shield-check',title:'Seguridad y confianza',desc:'Documentos verificados, pagos protegidos y soporte en cada paso.'},
                   {icon:'ti-trending-up',title:'Eficiencia y ahorro',desc:'Optimiza tus procesos, reduce tiempos muertos y aumenta tu rentabilidad.'},
                 ].map(item => (
-                  <div key={item.title} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.18)', borderRadius: '12px', padding: '24px 16px', border: '1px solid rgba(255,255,255,0.3)' }}>
+                  <div key={item.title} style={{ textAlign: 'center', background: 'rgba(2,14,32,0.85)', borderRadius: '12px', padding: '24px 16px', border: '1px solid rgba(255,255,255,0.12)' }}>
                     <i className={`ti ${item.icon}`} style={{ fontSize: '2.2rem', color: '#22c55e' }} aria-hidden="true"></i>
                     <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: '6px', marginTop: '10px' }}>{item.title}</div>
                     <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', lineHeight: 1.5 }}>{item.desc}</div>
@@ -240,7 +240,7 @@ export default function ComoFunciona() {
           )}
 
           {/* STATS */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap', marginTop: '72px', paddingTop: '48px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap', marginTop: '72px', paddingTop: '48px', borderTop: '1px solid rgba(255,255,255,0.12)' }}>
             {[['+2.400','Conductores activos','ti-users'],['+380','Empresas conectadas','ti-building'],[' 15','Regiones cubiertas','ti-map-pin'],['+50.000','Viajes realizados','ti-truck-delivery'],['100%','Pagos protegidos','ti-shield-check']].map(([num,lbl,ic]) => (
               <div key={lbl} style={{ textAlign: 'center' }}>
                 <i className={`ti ${ic}`} style={{ fontSize: '1.4rem', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', display: 'block' }} aria-hidden="true"></i>
