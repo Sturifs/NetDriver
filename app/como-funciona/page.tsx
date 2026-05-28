@@ -32,7 +32,7 @@ export default function ComoFunciona() {
           <button onClick={() => router.push('/')} style={{ padding: '10px 24px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'white', cursor: 'pointer', fontSize: '0.9rem' }}>← Volver al inicio</button>
         </nav>
 
-        <div style={{ position: 'relative', backgroundColor: '#020D24', background: `linear-gradient(to left, rgba(2,13,36,0.3) 0%, rgba(2,13,36,0.0) 50%), url('${tab === 'conductor' ? '/foto_final_camion2.png' : '/foto_empresa_final.png'}') right top / auto 100% no-repeat`, padding: '80px 40px 60px' }}>
+        <div style={{ position: 'relative', backgroundColor: '#020D24', background: `linear-gradient(to left, rgba(2,13,36,0.3) 0%, rgba(2,13,36,0.0) 50%), url('${tab === 'conductor' ? '/foto_final_camion2.png' : '/foto_empresa_final.png'}') right top / auto 70% no-repeat`, padding: '80px 40px 60px' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,14,32,1) 0%, rgba(2,14,32,0) 30%, rgba(2,14,32,0) 70%, rgba(2,14,32,0.1) 100%), linear-gradient(to bottom, rgba(2,14,32,0) 60%, rgba(2,14,32,1) 100%), linear-gradient(to top, rgba(2,14,32,0) 85%, rgba(2,14,32,1) 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '1100px', margin: '0 auto' }}>
 
@@ -142,7 +142,7 @@ export default function ComoFunciona() {
                   <h2 style={{ fontSize: '2rem', fontWeight: 900, lineHeight: 1.2, marginBottom: '16px' }}>¿Cómo funciona<br /><span style={{ color: '#22c55e' }}>NetDriver</span> para<br />Empresas?</h2>
                   <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem', lineHeight: 1.6 }}>La plataforma todo en uno que impulsa tu operación: conductores, maquinarias y oportunidades, en un solo lugar.</p>
                 </div>
-                <div style={{ background: 'rgba(2,14,32,0.85)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'none' }}>
                   <div style={{ background: 'rgba(34,197,94,0.15)', borderRadius: '50%', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <i className="ti ti-building" style={{ fontSize: '1.8rem', color: '#22c55e' }} aria-hidden="true"></i>
                   </div>
@@ -188,7 +188,7 @@ export default function ComoFunciona() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 'calc(20% - 10px)', color: '#22c55e', fontSize: '1.5rem', margin: '4px 0' }}>↓</div>
+              <div style={{ display: 'flex', justifyContent: 'center', color: '#22c55e', fontSize: '1.5rem', margin: '4px 0' }}>↓</div>
 
               {/* FILA 2 — 4 pasos invertidos */}
               <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '48px' }}>
