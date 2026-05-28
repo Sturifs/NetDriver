@@ -22,7 +22,7 @@ export default function ComoFunciona() {
   return (
     <>
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
-      <div style={{ background: '#020D24', minHeight: '100vh', color: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <div style={{ background: '#020D24', minHeight: '100vh', color: 'white', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', backgroundColor: '#020e20' }}>
 
         {/* NAVBAR */}
         <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px 0 0', height: '85px', marginLeft: '-12px', borderBottom: '1px solid rgba(255,255,255,0.12)', position: 'sticky', top: 0, background: '#020D24', zIndex: 100 }}>
