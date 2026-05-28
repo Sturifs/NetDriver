@@ -32,7 +32,7 @@ export default function ComoFunciona() {
           <button onClick={() => router.push('/')} style={{ padding: '10px 24px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'white', cursor: 'pointer', fontSize: '0.9rem' }}>← Volver al inicio</button>
         </nav>
 
-        <div style={{ position: 'relative', background: "url('/camion2_como_funciona.png') center center / cover no-repeat", padding: '80px 40px 60px' }}>
+        <div style={{ position: 'relative', background: "url('/camion_como_funciona_oficial.png') center center / cover no-repeat", padding: '80px 40px 60px' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(2,14,32,1) 0%, rgba(2,14,32,0) 30%, rgba(2,14,32,0) 70%, rgba(2,14,32,0.1) 100%), linear-gradient(to bottom, rgba(2,14,32,0) 60%, rgba(2,14,32,1) 100%), linear-gradient(to top, rgba(2,14,32,0) 85%, rgba(2,14,32,1) 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '1100px', margin: '0 auto' }}>
 
