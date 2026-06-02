@@ -168,11 +168,10 @@ export default function ComoFunciona() {
                   {num:2,icon:'ti-circle-check',title:'Completa tu perfil y verifica',desc:'Agrega los datos de tu empresa, documentos y métodos de pago para mayor seguridad.'},
                   {num:3,icon:'ti-users-group',title:'Accede a la base de datos',desc:'Busca, filtra y contacta conductores verificados por ubicación, experiencia y vehículo.',highlight:'Ideal para tus procesos de contratación.'},
                   {num:4,icon:'ti-backhoe',title:'Arrienda o busca maquinarias',desc:'Publica tus maquinarias disponibles o encuentra la que necesitas cuando la necesitas.',highlight:'No más equipos detenidos.'},
-                  {num:5,icon:'ti-briefcase',title:'Publica trabajos',desc:'Publica tus cargas o trabajos. Define origen, destino, tipo de carga, fecha y precio.'},
                 ].map((paso, idx) => (
                   <div key={paso.num} style={{ display: 'flex', alignItems: 'stretch', flex: 1, gap: '6px' }}>
                     <div style={{ flex: 1 }}><Card num={paso.num} icon={paso.icon} title={paso.title} desc={paso.desc} highlight={paso.highlight} /></div>
-                    {idx < 4 && <div style={{ display: 'flex', alignItems: 'center', color: '#22c55e', fontSize: '1.3rem', flexShrink: 0 }}>→</div>}
+                    {idx < 3 && <div style={{ display: 'flex', alignItems: 'center', color: '#22c55e', fontSize: '1.3rem', flexShrink: 0 }}>→</div>}
                   </div>
                 ))}
               </div>
@@ -188,15 +187,14 @@ export default function ComoFunciona() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 'calc(0% + 10px)', color: '#22c55e', fontSize: '2rem', margin: '4px 0' }}>↓</div>
 
               {/* FILA 2 — 4 pasos invertidos */}
               <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '48px' }}>
                 {[
-                  {num:9,icon:'ti-chart-bar',title:'Reportes y análisis',desc:'Accede a reportes de viajes, costos y rendimientos. Toma decisiones basadas en datos y haz crecer tu negocio.'},
-                  {num:8,icon:'ti-credit-card',title:'Controla y procesa pagos',desc:'Paga de manera segura a través de NetDriver. Historial de pagos, documentos y facturación siempre disponibles.'},
-                  {num:7,icon:'ti-map-2',title:'Monitorea tus operaciones',desc:'Sigue el estado de tus viajes en tiempo real, comunícate con los conductores y recibe notificaciones en cada etapa.'},
+                  {num:8,icon:'ti-chart-bar',title:'Reportes y análisis',desc:'Accede a reportes de viajes, costos y rendimientos. Toma decisiones basadas en datos y haz crecer tu negocio.'},
+                  {num:7,icon:'ti-credit-card',title:'Controla y procesa pagos',desc:'Paga de manera segura a través de NetDriver. Historial de pagos, documentos y facturación siempre disponibles.'},
                   {num:6,icon:'ti-message-check',title:'Recibe propuestas y selecciona',desc:'Conductores interesados enviarán sus propuestas. Compara perfiles, experiencia, evaluaciones y elige la mejor opción.'},
+              {num:5,icon:'ti-briefcase',title:'Publica trabajos',desc:'Publica tus cargas o trabajos. Define origen, destino, tipo de carga, fecha y precio.'},
                 ].map((paso, idx) => (
                   <div key={paso.num} style={{ display: 'flex', alignItems: 'stretch', flex: 1, gap: '6px' }}>
                     <div style={{ flex: 1 }}><Card num={paso.num} icon={paso.icon} title={paso.title} desc={paso.desc} /></div>
