@@ -162,7 +162,7 @@ export default function ComoFunciona() {
               </div>
 
               {/* FILA 1 — 5 pasos */}
-              <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '8px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '8px' }}>
                 {[
                   {num:1,icon:'ti-building-plus',title:'Registra tu empresa',desc:'Crea tu cuenta empresarial en minutos. Valida tu información y comienza a operar en NetDriver.'},
                   {num:2,icon:'ti-circle-check',title:'Completa tu perfil y verifica',desc:'Agrega los datos de tu empresa, documentos y métodos de pago para mayor seguridad.'},
@@ -174,6 +174,7 @@ export default function ComoFunciona() {
                     {idx < 3 && <div style={{ display: 'flex', alignItems: 'center', color: '#22c55e', fontSize: '1.3rem', flexShrink: 0 }}>→</div>}
                   </div>
                 ))}
+              <svg style={{ position: 'absolute', right: '-60px', top: '50%', transform: 'translateY(-15%)', height: 'calc(100% + 340px)', width: '56px', zIndex: 10, pointerEvents: 'none' }} viewBox="0 0 56 400" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 60 L20 60 Q48 60 48 90 L48 310 Q48 340 20 340 L0 340" stroke="#22c55e" strokeWidth="6" fill="none" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/></svg>
               </div>
 
               {/* BASE DE DATOS */}
