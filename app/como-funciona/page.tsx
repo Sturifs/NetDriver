@@ -188,7 +188,7 @@ export default function ComoFunciona() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', color: '#22c55e', fontSize: '1.5rem', margin: '4px 0' }}>↓</div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 'calc(0% + 10px)', color: '#22c55e', fontSize: '2rem', margin: '4px 0' }}>↓</div>
 
               {/* FILA 2 — 4 pasos invertidos */}
               <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '48px' }}>
