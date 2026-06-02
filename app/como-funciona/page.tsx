@@ -177,7 +177,7 @@ export default function ComoFunciona() {
               </div>
 
               {/* BASE DE DATOS */}
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '40px 0 16px 0' }}>
                 <div style={{ background: 'rgba(34,197,94,0.22)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '12px', padding: '16px 32px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <i className="ti ti-database" style={{ fontSize: '1.8rem', color: '#22c55e' }} aria-hidden="true"></i>
                   <div>
@@ -189,7 +189,7 @@ export default function ComoFunciona() {
 
 
               {/* FILA 2 — 4 pasos invertidos */}
-              <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '48px' }}>
+              <div style={{ display: 'flex', alignItems: 'stretch', gap: '6px', marginBottom: '48px', marginTop: '48px' }}>
                 {[
                   {num:8,icon:'ti-chart-bar',title:'Reportes y análisis',desc:'Accede a reportes de viajes, costos y rendimientos. Toma decisiones basadas en datos y haz crecer tu negocio.'},
                   {num:7,icon:'ti-credit-card',title:'Controla y procesa pagos',desc:'Paga de manera segura a través de NetDriver. Historial de pagos, documentos y facturación siempre disponibles.'},
@@ -232,7 +232,7 @@ export default function ComoFunciona() {
                     <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem' }}>Crea tu cuenta gratis y publica tu primer trabajo hoy mismo.</div>
                   </div>
                 </div>
-                <button onClick={() => router.push('/')} style={{ padding: '14px 36px', borderRadius: '10px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 700, fontSize: '1.05rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>Soy Empresa →</button>
+                <button onClick={() => setModalAbierto(true)} style={{ padding: '14px 36px', borderRadius: '10px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 700, fontSize: '1.05rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>Soy Empresa →</button>
               </div>
             </div>
           )}
@@ -251,7 +251,7 @@ export default function ComoFunciona() {
         </div>
         </div>
       </div>
-      {modalAbierto && <AuthModal onClose={() => setModalAbierto(false)} />}
+      {modalAbierto && <AuthModal onClose={() => setModalAbierto(false)} tipoInicial="empresa" />}
     </>
   )
 }

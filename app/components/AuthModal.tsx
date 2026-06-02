@@ -3,9 +3,9 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { supabase } from '../supabase'
 
-export default function AuthModal({ onClose }: { onClose: () => void }) {
+export default function AuthModal({ onClose, tipoInicial = 'conductor' }: { onClose: () => void, tipoInicial?: 'conductor' | 'empresa' }) {
   const [activeTab, setActiveTab] = useState<string>('registro')
-  const [activePlan, setActivePlan] = useState<'conductor' | 'empresa'>('conductor')
+  const [activePlan, setActivePlan] = useState<'conductor' | 'empresa'>(tipoInicial)
   const [nombre, setNombre] = useState('')
   const [apellido, setApellido] = useState('')
   const [nombreEmpresa, setNombreEmpresa] = useState('')
