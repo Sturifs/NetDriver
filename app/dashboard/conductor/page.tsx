@@ -87,7 +87,7 @@ export default function DashboardConductor() {
           <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{profile?.nombre} {profile?.apellido}</div>
           <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', margin: '2px 0 8px' }}>Conductor Profesional</div>
           <span style={{ background: 'rgba(39,174,96,0.15)', border: '1px solid rgba(39,174,96,0.4)', color: '#2ecc71', fontSize: '0.7rem', padding: '2px 10px', borderRadius: '20px' }}>✓ Perfil verificado</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px' }}>
+          <div onClick={() => router.push('/dashboard/conductor/resenas')} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', cursor: 'pointer' }}>
             <span style={{ color: '#f39c12', fontSize: '0.85rem' }}>★★★★★</span>
             <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 600 }}>4.8</span>
             <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>(128)</span>
@@ -281,8 +281,8 @@ export default function DashboardConductor() {
               <button style={{ width: '100%', background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.88rem', cursor: 'pointer', marginTop: '8px' }}>Ver todas →</button>
             </div>
             {/* Calificación */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5' }}>
-              <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.9rem', marginBottom: '10px' }}>Mi Calificación</div>
+            <div onClick={() => router.push('/dashboard/conductor/resenas')} style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}><div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.9rem' }}>Mi Calificación</div><span style={{ fontSize: '0.75rem', color: '#2563eb' }}>Ver todas →</span></div>
               <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1a3a5c' }}>4.8</div>
               <div style={{ color: '#f39c12', fontSize: '1rem', margin: '4px 0' }}>★★★★★</div>
               <div style={{ fontSize: '0.78rem', color: '#8fa3b8', marginBottom: '10px' }}>128 calificaciones</div>

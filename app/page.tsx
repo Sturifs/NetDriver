@@ -274,7 +274,7 @@ export default function Home() {
       </div>
     </section>
 
-    <section id="planes" style={{ background: '#f8fafc', padding: '72px 40px', color: '#0f172a' }}>
+    <section id="planes" style={{ background: '#f8fafc', padding: '72px 40px', color: '#0f172a', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <div style={{ fontSize: '0.78rem', color: '#22c55e', fontWeight: 700, letterSpacing: '0.14em', marginBottom: '10px' }}>PLANES Y PRECIOS</div>
         <h2 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '28px' }}>ELIGE TU PLAN</h2>
@@ -327,7 +327,7 @@ export default function Home() {
     </section>
 
 
-      <section id='referidos' style={{ background: '#020D1A', padding: '56px 40px', color: 'white' }}>
+      <section id='referidos' style={{ background: '#020D1A', padding: '56px 40px', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
           {/* TÍTULO */}
