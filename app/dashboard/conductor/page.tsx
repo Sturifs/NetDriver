@@ -34,14 +34,9 @@ export default function DashboardConductor() {
 
   const navItems = [
     { id: 'inicio', icono: '🏠', label: 'Inicio' },
-    { id: 'empleos', icono: '💼', label: 'Buscar empleos' },
-    { id: 'relampago', icono: '⚡', label: 'Pega relámpago', badge: 'Nuevo', badgeColor: '#8e44ad' },
-    { id: 'postulaciones', icono: '📋', label: 'Mis postulaciones' },
-    { id: 'trabajos', icono: '🔧', label: 'Mis trabajos', badge: 'Activo', badgeColor: '#27ae60' },
-    { id: 'perfil', icono: '👤', label: 'Mi perfil' },
-    { id: 'cv', icono: '📄', label: 'Mi CV' },
     { id: 'documentos', icono: '🗂️', label: 'Documentos' },
-    { id: 'evaluaciones', icono: '⭐', label: 'Mis evaluaciones' },
+    { id: 'equipos', icono: '🚛', label: 'Mis equipos' },
+    { id: 'actividad', icono: '📊', label: 'Actividad' },
     { id: 'mensajes', icono: '💬', label: 'Mensajes', badge: '5', badgeColor: '#e74c3c' },
     { id: 'notificaciones', icono: '🔔', label: 'Notificaciones', badge: '3', badgeColor: '#e74c3c' },
   ]
@@ -81,17 +76,61 @@ export default function DashboardConductor() {
         </div>
         {/* Perfil */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'white', fontSize: '1rem', marginBottom: '10px' }}>
-            {profile?.nombre?.[0]}{profile?.apellido?.[0]}
+          {/* Avatar */}
+          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
+            <div style={{ position: 'relative', width: '72px', height: '72px' }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'white', fontSize: '1.4rem', border: profile?.perfilCompleto ? '3px solid #22c55e' : '3px solid #2563eb' }}>
+                {profile?.nombre?.[0]}{profile?.apellido?.[0]}
+              </div>
+              {profile?.perfilCompleto && (
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '20px', height: '20px', borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white', border: '2px solid #020D24' }}>✓</div>
+              )}
+            </div>
           </div>
-          <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{profile?.nombre} {profile?.apellido}</div>
-          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', margin: '2px 0 8px' }}>Conductor Profesional</div>
-          <span style={{ background: 'rgba(39,174,96,0.15)', border: '1px solid rgba(39,174,96,0.4)', color: '#2ecc71', fontSize: '0.7rem', padding: '2px 10px', borderRadius: '20px' }}>✓ Perfil verificado</span>
-          <div onClick={() => router.push('/dashboard/conductor/resenas')} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', cursor: 'pointer' }}>
+          {/* Nombre */}
+          <div style={{ marginBottom: '8px' }}>
+            <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{profile?.nombre} {profile?.apellido}</div>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Conductor Profesional</div>
+          </div>
+          {/* Badges */}
+          <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            <span style={{ background: 'rgba(39,174,96,0.15)', border: '1px solid rgba(39,174,96,0.4)', color: '#2ecc71', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '20px' }}>✓ Perfil verificado</span>
+            {profile?.perfilCompleto && (
+              <span style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.4)', color: '#60a5fa', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '20px' }}>★ Perfil destacado</span>
+            )}
+          </div>
+          {/* Estrellas */}
+          <div onClick={() => router.push('/dashboard/conductor/resenas')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '6px', marginBottom: '12px', cursor: 'pointer' }}>
             <span style={{ color: '#f39c12', fontSize: '0.85rem' }}>★★★★★</span>
             <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 600 }}>4.8</span>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>(128)</span>
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>(128 reseñas)</span>
           </div>
+          {/* Perfil incompleto */}
+          {!profile?.perfilCompleto && (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
+                  <svg width="48" height="48" viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4"/>
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="#22c55e" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset="18.8" strokeLinecap="round" transform="rotate(-90 24 24)"/>
+                  </svg>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '0.65rem', fontWeight: 700, color: 'white' }}>85%</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, color: 'white', fontSize: '0.8rem' }}>Perfil incompleto</div>
+                  <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>Completa tu perfil para tener más oportunidades.</div>
+                </div>
+              </div>
+              <button style={{ width: '100%', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', padding: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>Completar perfil</button>
+            </div>
+          )}
+          {/* Perfil completo */}
+          {profile?.perfilCompleto && (
+            <div>
+              <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>📅 Miembro desde 2026</div>
+              <button style={{ width: '100%', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', padding: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>⬇ Descargar CV</button>
+            </div>
+          )}
         </div>
         {/* Nav */}
         <nav style={{ flex: 1, padding: '10px 0' }}>
@@ -236,38 +275,26 @@ export default function DashboardConductor() {
             </div>
           </div>{/* Columna derecha */}
           <div style={{ width: '260px', minWidth: '260px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {/* Mi perfil */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.9rem' }}>Mi Perfil</span>
-                <span style={{ color: '#2563eb', fontSize: '0.8rem', cursor: 'pointer' }}>Ver completo →</span>
+            {/* Ingresos */}
+            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem' }}>💰 Ingresos</span>
+                <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>Este mes</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ position: 'relative', width: '68px', height: '68px', minWidth: '68px', flexShrink: 0 }}>
-                  <svg width="68" height="68" viewBox="0 0 68 68" style={{ position: 'absolute', top: 0, left: 0 }}>
-                    <circle cx="34" cy="34" r="28" fill="none" stroke="#e8eef5" strokeWidth="6"/>
-                    <circle cx="34" cy="34" r="28" fill="none" stroke="#27ae60" strokeWidth="6" strokeLinecap="round"
-                      strokeDasharray="175.9" strokeDashoffset="26.4" transform="rotate(-90 34 34)"/>
-                  </svg>
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem' }}>85%</div>
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>Perfil Completo</div>
-                  <div style={{ fontSize: '0.75rem', color: '#8fa3b8', lineHeight: 1.4 }}>¡Muy bien! Completa tu perfil para tener más oportunidades.</div>
-                </div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#27ae60', marginBottom: '4px' }}>$485.000</div>
+              <div style={{ fontSize: '0.78rem', color: '#8fa3b8', marginBottom: '14px' }}>Total ganado a la fecha</div>
+              <div style={{ borderTop: '1px solid #f4f7fa', paddingTop: '12px' }}>
+                {[['Enero - Marzo', '$1.240.000'], ['Abril - Mayo', '$485.000']].map(([periodo, monto]) => (
+                  <div key={periodo} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
+                    <span style={{ fontSize: '0.82rem', color: '#8fa3b8' }}>{periodo}</span>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1a3a5c' }}>{monto}</span>
+                  </div>
+                ))}
               </div>
-              <button style={{ width: '100%', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '7px', borderRadius: '6px', fontSize: '0.88rem', cursor: 'pointer' }}>Completar Perfil</button>
-            </div>
-            {/* Mi CV */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.9rem' }}>📄 Mi CV</div>
-                  <div style={{ fontSize: '0.75rem', color: '#8fa3b8' }}>Actualizado: 15 May 2024</div>
-                </div>
-                <span style={{ color: '#27ae60', fontSize: '0.78rem', fontWeight: 600 }}>Público</span>
+              <div style={{ marginTop: '12px', background: '#f4f7fa', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.72rem', color: '#8fa3b8', marginBottom: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Total acumulado 2026</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1a3a5c' }}>$1.725.000</div>
               </div>
-              <button style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '7px', borderRadius: '6px', fontSize: '0.88rem', cursor: 'pointer' }}>👁 Ver CV</button>
             </div>
             {/* Postulaciones */}
             <div style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5' }}>
@@ -311,27 +338,6 @@ export default function DashboardConductor() {
               </div>
             </div>
 
-            {/* Ingresos */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem' }}>💰 Ingresos</span>
-                <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>Este mes</span>
-              </div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#27ae60', marginBottom: '4px' }}>$485.000</div>
-              <div style={{ fontSize: '0.78rem', color: '#8fa3b8', marginBottom: '14px' }}>Total ganado a la fecha</div>
-              <div style={{ borderTop: '1px solid #f4f7fa', paddingTop: '12px' }}>
-                {[['Enero - Marzo', '$1.240.000'], ['Abril - Mayo', '$485.000']].map(([periodo, monto]) => (
-                  <div key={periodo} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0' }}>
-                    <span style={{ fontSize: '0.82rem', color: '#8fa3b8' }}>{periodo}</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1a3a5c' }}>{monto}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: '12px', background: '#f4f7fa', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.72rem', color: '#8fa3b8', marginBottom: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Total acumulado 2026</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1a3a5c' }}>$1.725.000</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
