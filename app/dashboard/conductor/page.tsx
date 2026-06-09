@@ -176,32 +176,8 @@ export default function DashboardConductor() {
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1a3a5c', marginBottom: '4px' }}>¡Hola, {profile?.nombre}! 👋</h1>
             <p style={{ color: '#8fa3b8', fontSize: '0.9rem', marginBottom: '24px' }}>Aquí tienes las mejores oportunidades para ti.</p>
 
-            {/* Empleos destacados */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a3a5c' }}>Empleos destacados para ti</h2>
-              <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todos →</button>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
-              {empleos.map((e, i) => (
-                <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <div style={{ width: '38px', height: '38px', flexShrink: 0 }}>{e.logo}</div>
-                    {e.destacado && <span style={{ background: '#e8f5e9', color: '#1b5e20', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>Destacado</span>}
-                  </div>
-                  <div style={{ fontWeight: 700, color: '#1a3a5c', marginBottom: '2px' }}>{e.nombre}</div>
-                  <div style={{ fontSize: '0.88rem', color: '#8fa3b8', marginBottom: '2px' }}>{e.compania}</div>
-                  <div style={{ fontSize: '0.88rem', color: '#8fa3b8', marginBottom: '8px' }}>{e.lugar}</div>
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                    {e.tags.map(t => <span key={t} style={{ fontSize: '0.75rem', color: '#8fa3b8', background: '#f4f7fa', padding: '2px 8px', borderRadius: '4px' }}>{t}</span>)}
-                  </div>
-                  <div style={{ fontWeight: 700, color: '#1a3a5c', marginBottom: '4px' }}>{e.salario}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#8fa3b8', marginBottom: '12px' }}>Publicado {e.tiempo}</div>
-                  <button style={{ width: '100%', background: 'transparent', border: '1px solid #2563eb', color: '#2563eb', padding: '7px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>Postular</button>
-                </div>
-              ))}
-            </div>
-
             {/* Pegas relámpago */}
+
             <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#92400e' }}>⚡ Pega Relámpago</h2>
@@ -227,6 +203,30 @@ export default function DashboardConductor() {
 
 
 
+            {/* Empleos destacados */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a3a5c' }}>Empleos destacados para ti</h2>
+              <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todos →</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+              {empleos.map((e, i) => (
+                <div key={i} style={{ background: 'white', borderRadius: '12px', padding: '16px', border: '1px solid #e8eef5', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                    <div style={{ width: '38px', height: '38px', flexShrink: 0 }}>{e.logo}</div>
+                    {e.destacado && <span style={{ background: '#e8f5e9', color: '#1b5e20', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>Destacado</span>}
+                  </div>
+                  <div style={{ fontWeight: 700, color: '#1a3a5c', marginBottom: '2px' }}>{e.nombre}</div>
+                  <div style={{ fontSize: '0.88rem', color: '#8fa3b8', marginBottom: '2px' }}>{e.compania}</div>
+                  <div style={{ fontSize: '0.88rem', color: '#8fa3b8', marginBottom: '8px' }}>{e.lugar}</div>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                    {e.tags.map(t => <span key={t} style={{ fontSize: '0.75rem', color: '#8fa3b8', background: '#f4f7fa', padding: '2px 8px', borderRadius: '4px' }}>{t}</span>)}
+                  </div>
+                  <div style={{ fontWeight: 700, color: '#1a3a5c', marginBottom: '4px' }}>{e.salario}</div>
+                  <div style={{ fontSize: '0.78rem', color: '#8fa3b8', marginBottom: '12px' }}>Publicado {e.tiempo}</div>
+                  <button style={{ width: '100%', background: 'transparent', border: '1px solid #2563eb', color: '#2563eb', padding: '7px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>Postular</button>
+                </div>
+              ))}
+            </div>
             {/* Postulaciones recientes */}
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
