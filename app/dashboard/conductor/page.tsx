@@ -34,6 +34,7 @@ export default function DashboardConductor() {
 
   const navItems = [
     { id: 'inicio', icono: '🏠', label: 'Inicio' },
+    { id: 'buscar', icono: '🔍', label: 'Buscar empleos' },
     { id: 'documentos', icono: '🗂️', label: 'Documentos' },
     { id: 'equipos', icono: '🚛', label: 'Mis equipos' },
     { id: 'actividad', icono: '📊', label: 'Actividad' },
@@ -154,7 +155,7 @@ export default function DashboardConductor() {
       <div style={{ marginLeft: '220px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Topbar */}
         <div style={{ background: 'white', borderBottom: '1px solid #e8eef5', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', gap: '16px', position: 'sticky', top: 0, zIndex: 40 }}>
-          <input placeholder="Buscar empleos, empresas o rutas..." style={{ flex: 1, maxWidth: '420px', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '8px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c' }} />
+          <input placeholder="Buscar empleos, empresas o rutas..." style={{ display: 'none', flex: 1, maxWidth: '420px', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '8px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c' }} />
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -176,7 +177,7 @@ export default function DashboardConductor() {
             <p style={{ color: '#8fa3b8', fontSize: '0.9rem', marginBottom: '24px' }}>Aquí tienes las mejores oportunidades para ti.</p>
 
             {/* Buscador */}
-            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', marginBottom: '24px', border: '1px solid #e8eef5' }}>
+            <div style={{ display: 'none', background: 'white', borderRadius: '12px', padding: '18px', marginBottom: '24px', border: '1px solid #e8eef5' }}>
               <div style={{ display: 'flex', gap: '12px', marginBottom: '14px' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8fa3b8', textTransform: 'uppercase', marginBottom: '6px' }}>Qué trabajo buscas</div>
