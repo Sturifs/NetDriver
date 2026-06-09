@@ -136,7 +136,7 @@ export default function DashboardConductor() {
         {/* Nav */}
         <nav style={{ flex: 1, padding: '10px 0' }}>
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setNavActivo(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: navActivo === item.id ? 'rgba(37,99,235,0.2)' : 'transparent', borderLeft: navActivo === item.id ? '3px solid #2563eb' : '3px solid transparent', border: 'none', color: navActivo === item.id ? 'white' : 'rgba(255,255,255,0.55)', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
+            <button key={item.id} onClick={() => { if (item.id === 'buscar') { router.push('/dashboard/conductor/buscar') } else { setNavActivo(item.id) } }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: navActivo === item.id ? 'rgba(37,99,235,0.2)' : 'transparent', borderLeft: navActivo === item.id ? '3px solid #2563eb' : '3px solid transparent', border: 'none', color: navActivo === item.id ? 'white' : 'rgba(255,255,255,0.55)', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
               <span>{item.icono}</span>
               <span style={{ flex: 1 }}>{item.label}</span>
               {item.badge && <span style={{ background: item.badgeColor, color: 'white', fontSize: '0.65rem', padding: '1px 7px', borderRadius: '10px' }}>{item.badge}</span>}
