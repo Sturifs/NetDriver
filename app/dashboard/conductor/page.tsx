@@ -176,27 +176,6 @@ export default function DashboardConductor() {
             <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1a3a5c', marginBottom: '4px' }}>¡Hola, {profile?.nombre}! 👋</h1>
             <p style={{ color: '#8fa3b8', fontSize: '0.9rem', marginBottom: '24px' }}>Aquí tienes las mejores oportunidades para ti.</p>
 
-            {/* Buscador */}
-            <div style={{ display: 'none', background: 'white', borderRadius: '12px', padding: '18px', marginBottom: '24px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '14px' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8fa3b8', textTransform: 'uppercase', marginBottom: '6px' }}>Qué trabajo buscas</div>
-                  <input placeholder="Ej: Conductor A4, Reparto, Minería..." style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '9px 12px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c' }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8fa3b8', textTransform: 'uppercase', marginBottom: '6px' }}>Dónde</div>
-                  <input placeholder="Ciudad, región o empresa" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '9px 12px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c' }} />
-                </div>
-                <button style={{ alignSelf: 'flex-end', padding: '10px 24px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}>Buscar</button>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {['Tipo de trabajo ▾', 'Tipo de licencia ▾', 'Ubicación ▾', 'Más filtros ▾'].map(f => (
-                  <button key={f} style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 12px', fontSize: '0.8rem', color: '#1a3a5c', cursor: 'pointer' }}>{f}</button>
-                ))}
-                <button style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.8rem', cursor: 'pointer' }}>Limpiar filtros</button>
-              </div>
-            </div>
-
             {/* Empleos destacados */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a3a5c' }}>Empleos destacados para ti</h2>
