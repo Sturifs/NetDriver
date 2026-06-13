@@ -22,6 +22,16 @@ export default function AuthModal({ onClose, tipoInicial = 'conductor' }: { onCl
     else { setMensaje('✅ Sesión iniciada'); onClose() }
     setLoading(false)
   }
+  const handleResetPassword = async () => {
+    if (!email) { setMensaje('Error: Ingresa tu email para recuperar tu contraseña'); return }
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: typeof window !== 'undefined' ? window.location.origin + '/restablecer-password' : undefined,
+    })
+    if (error) setMensaje('Error: ' + error.message)
+    else setMensaje('✅ Te enviamos un correo para restablecer tu contraseña')
+    setLoading(false)
+  }
 
   const handleRegistro = async () => {
     setLoading(true)
@@ -73,6 +83,9 @@ export default function AuthModal({ onClose, tipoInicial = 'conductor' }: { onCl
           )}
           <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
           <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" type="password" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+          {activeTab === 'login' && (
+            <button onClick={handleResetPassword} type="button" style={{ background: 'transparent', border: 'none', color: '#22c55e', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'right', padding: 0 }}>¿Olvidaste tu contraseña?</button>
+          )}
         </div>
         {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#f87171' : '#22c55e', textAlign: 'center', marginTop: '8px' }}>{mensaje}</div>}
         <button onClick={activeTab === 'login' ? handleLogin : handleRegistro} disabled={loading} style={{ padding: '13px', borderRadius: '10px', border: 'none', marginTop: '16px', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: loading ? 'wait' : 'pointer', width: '100%' }}>

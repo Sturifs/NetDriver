@@ -107,6 +107,16 @@ export default function Home() {
     }
     setLoading(false)
   }
+  const handleResetPassword = async () => {
+    if (!email) { setMensaje('Error: Ingresa tu email para recuperar tu contraseña'); return }
+    setLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: typeof window !== 'undefined' ? window.location.origin + '/restablecer-password' : undefined,
+    })
+    if (error) setMensaje('Error: ' + error.message)
+    else setMensaje('✅ Te enviamos un correo para restablecer tu contraseña')
+    setLoading(false)
+  }
 
   return (
   <div style={{ background: '#020D24', minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: 'white' }}>
@@ -242,37 +252,6 @@ export default function Home() {
       </div>
       <a href="https://www.registrocivil.cl" target="_blank" rel="noopener" style={{ padding: '11px 22px', borderRadius: '8px', background: 'white', color: '#0f172a', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700, whiteSpace: 'nowrap' }}>↓ DESCARGA TU HOJA DE VIDA</a>
     </div>
-
-    <section style={{ background: 'white', padding: '72px 40px', color: '#0f172a' }}>
-      <div style={{ textAlign: 'center', marginBottom: '52px' }}>
-        <div style={{ fontSize: '0.78rem', color: '#22c55e', fontWeight: 700, letterSpacing: '0.14em', marginBottom: '12px' }}>¿CÓMO FUNCIONA?</div>
-        <h2 style={{ fontSize: '2.2rem', fontWeight: 900 }}>SIMPLE. RÁPIDO. EFECTIVO.</h2>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '56px', maxWidth: '920px', margin: '0 auto' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px', paddingBottom: '14px', borderBottom: '2px solid #e2e8f0' }}>
-            <span>👤</span><span style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em', color: '#2563eb' }}>PARA CONDUCTORES</span>
-          </div>
-          {[['01','Crea tu perfil','Regístrate gratis y carga tu experiencia, licencias y disponibilidad.'],['02','Genera tu CV gratis 📄','Crea tu CV profesional y descárgalo. Plan Premium sin sello de agua.'],['03','Postula y acepta Pegas Relámpago ⚡','Accede a ofertas de trabajo en transporte y logística en todo Chile.'],['04','Recibe alertas 🔔','Alertas por correo o WhatsApp antes de que venzan tus documentos.']].map(([num,title,desc]) => (
-            <div key={num} style={{ display: 'flex', gap: '18px', marginBottom: '26px' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#2563eb', minWidth: '36px' }}>{num}</div>
-              <div><div style={{ fontWeight: 700, marginBottom: '5px', fontSize: '0.92rem' }}>{title}</div><div style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.55 }}>{desc}</div></div>
-            </div>
-          ))}
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px', paddingBottom: '14px', borderBottom: '2px solid #e2e8f0' }}>
-            <span>🏢</span><span style={{ fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.06em', color: '#22c55e' }}>PARA EMPRESAS</span>
-          </div>
-          {[['01','Registra tu empresa','Crea una cuenta empresarial y comienza a usar la plataforma.'],['02','Publica ofertas de trabajo','Sube tus vacantes y recibe postulaciones de conductores verificados.'],['03','Certifica tus equipos 🛡️','Registra y certifica tu flota de vehículos y maquinaria.'],['04','Acceso ilimitado con Plan Pro','Búsqueda ilimitada y pretensiones de renta de candidatos.']].map(([num,title,desc]) => (
-            <div key={num} style={{ display: 'flex', gap: '18px', marginBottom: '26px' }}>
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#22c55e', minWidth: '36px' }}>{num}</div>
-              <div><div style={{ fontWeight: 700, marginBottom: '5px', fontSize: '0.92rem' }}>{title}</div><div style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.55 }}>{desc}</div></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
 
     <section id="planes" style={{ background: '#f8fafc', padding: '72px 40px', color: '#0f172a', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -473,6 +452,9 @@ export default function Home() {
             )}
             <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
             <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" type="password" style={{ padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontSize: '0.9rem', outline: 'none' }} />
+            {activeTab === 'login' && (
+              <button onClick={handleResetPassword} type="button" style={{ background: 'transparent', border: 'none', color: '#22c55e', fontSize: '0.8rem', cursor: 'pointer', textAlign: 'right', padding: 0 }}>¿Olvidaste tu contraseña?</button>
+            )}
             {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#f87171' : '#22c55e', textAlign: 'center' }}>{mensaje}</div>}
             <button onClick={activeTab === 'login' ? handleLogin : handleRegistro} disabled={loading} style={{ padding: '13px', borderRadius: '10px', border: 'none', marginTop: '4px', background: '#22c55e', color: 'white', fontSize: '0.95rem', fontWeight: 700, cursor: loading ? 'wait' : 'pointer' }}>{loading ? 'Procesando...' : activeTab === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}</button>
           </div>
