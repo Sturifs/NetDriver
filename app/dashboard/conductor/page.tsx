@@ -122,7 +122,7 @@ export default function DashboardConductor() {
                   <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>Completa tu perfil para tener más oportunidades.</div>
                 </div>
               </div>
-              <button style={{ width: '100%', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', padding: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>Completar perfil</button>
+              <button onClick={() => router.push('/dashboard/conductor/completar-perfil')} style={{ width: '100%', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', padding: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>Completar perfil</button>
             </div>
           )}
           {/* Perfil completo */}
