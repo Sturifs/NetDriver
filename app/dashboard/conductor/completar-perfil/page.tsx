@@ -10,14 +10,63 @@ export default function CompletarPerfil() {
   const [pasoActivo, setPasoActivo] = useState(1)
   const [regionSel, setRegionSel] = useState('')
   const [comunaSel, setComunaSel] = useState('')
+  const [dispFueraRegion, setDispFueraRegion] = useState('')
+  const [nombreCompleto, setNombreCompleto] = useState('')
+  const [rut, setRut] = useState('')
+  const [fechaNacimiento, setFechaNacimiento] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [emailContacto, setEmailContacto] = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState('')
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/'); return }
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(data)
+      if (data) {
+        setNombreCompleto(`${data.nombre || ''} ${data.apellido || ''}`.trim())
+        setRut(data.rut || '')
+        setFechaNacimiento(data.fecha_nacimiento || '')
+        setTelefono(data.telefono || '')
+        setEmailContacto(data.email || '')
+        setRegionSel(data.region || '')
+        setComunaSel(data.comuna || '')
+        setDispFueraRegion(data.disponibilidad_fuera_region || '')
+      }
     })
   }, [])
+
+  const handleGuardar = async (salir: boolean, avanzar?: number) => {
+    setGuardando(true)
+    setMensaje('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setGuardando(false); return }
+
+    const partesNombre = nombreCompleto.trim().split(' ')
+    const nombre = partesNombre[0] || ''
+    const apellido = partesNombre.slice(1).join(' ') || ''
+
+    const { error } = await supabase.from('profiles').update({
+      nombre, apellido,
+      rut,
+      fecha_nacimiento: fechaNacimiento || null,
+      telefono,
+      email: emailContacto,
+      region: regionSel,
+      comuna: comunaSel,
+      disponibilidad_fuera_region: dispFueraRegion,
+    }).eq('id', user.id)
+
+    if (error) {
+      setMensaje('Error al guardar: ' + error.message)
+    } else {
+      setMensaje('✅ Progreso guardado')
+      if (salir) router.push('/dashboard/conductor')
+      else if (avanzar) setPasoActivo(avanzar)
+    }
+    setGuardando(false)
+  }
 
   const pasos = [
     { num: 1, label: 'Información\nPersonal' },
@@ -72,11 +121,42 @@ export default function CompletarPerfil() {
             <button onClick={() => router.push('/dashboard/conductor/completar-perfil')} style={{ width: '100%', background: '#2563eb', border: 'none', color: 'white', borderRadius: '8px', padding: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>Completar perfil</button>
           </div>
         </div>
-        <nav style={{ flex: 1, padding: '10px 0' }}>
-          <button onClick={() => router.push('/dashboard/conductor')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 20px', background: 'transparent', border: 'none', borderLeft: '3px solid transparent', color: 'rgba(255,255,255,0.55)', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>
-            <span>🏠</span><span style={{ flex: 1 }}>Inicio</span>
-          </button>
-        </nav>
+
+        {/* Beneficios */}
+        <div style={{ margin: '16px 20px 0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px' }}>
+          <div style={{ color: 'white', fontWeight: 700, fontSize: '0.85rem', marginBottom: '12px' }}>Al completar tu perfil obtendrás:</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#22c55e', fontSize: '0.9rem' }}><i className="ti ti-file-text" style={{ fontSize: '1rem' }}></i></span>
+              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>CV profesional descargable</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#22c55e', fontSize: '0.9rem' }}><i className="ti ti-eye" style={{ fontSize: '1rem' }}></i></span>
+              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>Más visibilidad para empresas</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#22c55e', fontSize: '0.9rem' }}><i className="ti ti-star" style={{ fontSize: '1rem' }}></i></span>
+              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>Postulaciones prioritarias</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#22c55e', fontSize: '0.9rem' }}><i className="ti ti-circle-check" style={{ fontSize: '1rem' }}></i></span>
+              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>Sello NetDriver Verificado</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Ayuda */}
+        <div style={{ margin: '12px 20px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+          <span style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.6 15.36 3.49 16.86L2.05 22L7.3 20.62C8.74 21.41 10.37 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2ZM12.04 20.16C10.56 20.16 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.22 15 3.79 13.47 3.79 11.91C3.79 7.37 7.5 3.66 12.05 3.66C14.25 3.66 16.31 4.51 17.85 6.06C19.39 7.61 20.29 9.66 20.29 11.92C20.29 16.46 16.58 20.16 12.04 20.16ZM16.56 13.99C16.31 13.87 15.09 13.27 14.87 13.19C14.65 13.1 14.49 13.06 14.32 13.31C14.16 13.55 13.69 14.13 13.55 14.29C13.41 14.45 13.26 14.46 13.02 14.34C12.79 14.22 11.99 13.94 11.27 13.29C10.71 12.78 10.34 12.16 10.21 11.91C10.07 11.66 10.19 11.53 10.32 11.41C10.43 11.3 10.57 11.13 10.7 10.98C10.83 10.83 10.88 10.72 10.97 10.55C11.06 10.38 11.01 10.27 10.95 10.15C10.88 10.04 10.32 8.75 10.13 8.27C9.94 7.79 9.74 7.84 9.59 7.84C9.44 7.83 9.27 7.83 9.1 7.83C8.93 7.83 8.65 7.9 8.4 8.17C8.15 8.43 7.41 9.13 7.41 10.42C7.41 11.71 8.42 12.96 8.55 13.13C8.69 13.3 10.32 15.93 12.9 16.91C15.48 17.89 15.48 17.56 15.96 17.51C16.43 17.46 17.51 16.84 17.74 16.18C17.96 15.52 17.96 14.95 17.88 14.83C17.79 14.71 17.6 14.65 17.36 14.53L16.56 13.99Z"/></svg>
+          </span>
+          <div>
+            <div style={{ color: 'white', fontWeight: 700, fontSize: '0.8rem' }}>¿Necesitas ayuda?</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.72rem', marginTop: '2px' }}>Escríbenos por WhatsApp</div>
+          </div>
+        </div>
+
+        <nav style={{ flex: 1, padding: '10px 0' }}></nav>
       </div>
 
       {/* MAIN */}
@@ -91,7 +171,7 @@ export default function CompletarPerfil() {
                 <p style={{ color: '#8fa3b8', fontSize: '0.85rem', margin: '2px 0 0' }}>Sigue estos pasos y obtén tu CV profesional</p>
               </div>
             </div>
-            <button onClick={() => router.push('/dashboard/conductor')} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>📄 Guardar y salir</button>
+            <button onClick={() => handleGuardar(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
           </div>
 
           {/* Stepper */}
@@ -129,29 +209,29 @@ export default function CompletarPerfil() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Nombre completo</label>
-                    <input placeholder="Ingresa tu nombre completo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    <input value={nombreCompleto} onChange={e => setNombreCompleto(e.target.value)} placeholder="Ingresa tu nombre completo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>RUT</label>
-                    <input placeholder="12.345.678-9" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    <input value={rut} onChange={e => setRut(e.target.value)} placeholder="12.345.678-9" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Fecha de nacimiento</label>
-                    <input type="date" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    <input type="date" value={fechaNacimiento} onChange={e => setFechaNacimiento(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Teléfono</label>
-                    <input placeholder="+56 9 1234 5678" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    <input value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="+56 9 1234 5678" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', marginBottom: '20px' }}>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Correo electrónico</label>
-                    <input placeholder="correo@ejemplo.com" defaultValue={profile?.email || ''} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    <input value={emailContacto} onChange={e => setEmailContacto(e.target.value)} placeholder="correo@ejemplo.com" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Región</label>
@@ -170,6 +250,14 @@ export default function CompletarPerfil() {
                       {regionSel && regionesComunas[regionSel]?.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
+                  <div>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Disponibilidad para trabajar fuera de su región</label>
+                    <select value={dispFueraRegion} onChange={e => setDispFueraRegion(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c' }}>
+                      <option value="">Selecciona una opción</option>
+                      <option value="si">Sí</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
@@ -177,8 +265,11 @@ export default function CompletarPerfil() {
                   <span style={{ color: '#8fa3b8', fontSize: '0.85rem' }}>Esta información será utilizada para crear tu perfil y generar tu CV profesional.</span>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setPasoActivo(2)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>Continuar →</button>
+                {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => router.push('/dashboard/conductor')} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Volver atrás</button>
+                  <button onClick={() => handleGuardar(false, 2)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>{guardando ? 'Guardando...' : 'Continuar →'}</button>
                 </div>
               </>
             )}
