@@ -180,7 +180,10 @@ export default function DashboardConductor() {
 
             <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#92400e' }}>⚡ Pega Relámpago</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#92400e' }}>⚡ Pega Relámpago</h2>
+                  <span style={{ fontSize: '0.8rem', color: '#92400e' }}>Las Pega Relámpago son trabajos de corta duración. ¡Gana dinero extra cuando quieras!</span>
+                </div>
                 <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todas →</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
@@ -198,7 +201,6 @@ export default function DashboardConductor() {
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: '0.8rem', color: '#92400e', marginTop: '12px' }}>⚡ Las Pega Relámpago son trabajos de corta duración. ¡Gana dinero extra cuando quieras!</p>
             </div>
 
 

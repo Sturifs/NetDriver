@@ -18,6 +18,63 @@ export default function CompletarPerfil() {
   const [emailContacto, setEmailContacto] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState('')
+  const [licenciasSel, setLicenciasSel] = useState<string[]>([])
+  const [fechaVencimientoLicencia, setFechaVencimientoLicencia] = useState('')
+  const [archivoLicencia, setArchivoLicencia] = useState<File | null>(null)
+  const [fechasVencimiento, setFechasVencimiento] = useState<Record<string, string>>({})
+  const [archivosLicencia, setArchivosLicencia] = useState<Record<string, File | null>>({})
+
+  const licenciasDisponibles = [
+    { id: 'A1', nombre: 'Clase A1', desc: 'Motocicletas' },
+    { id: 'A2', nombre: 'Clase A2', desc: 'Vehículos particulares' },
+    { id: 'A3', nombre: 'Clase A3', desc: 'Transporte de pasajeros' },
+    { id: 'A4', nombre: 'Clase A4', desc: 'Transporte de carga' },
+    { id: 'A5', nombre: 'Clase A5', desc: 'Transporte de carga pesada' },
+    { id: 'D', nombre: 'Clase D', desc: 'Transporte de pasajeros' },
+    { id: 'E', nombre: 'Clase E', desc: 'Vehículos articulados o con remolque' },
+    { id: 'F', nombre: 'Clase F', desc: 'Vehículos especiales o maquinaria' },
+  ]
+
+  const toggleLicencia = (id: string) => {
+    setLicenciasSel(prev => prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id])
+  }
+
+  const licenciaPrincipal = licenciasSel.filter(l => l !== 'otros')[licenciasSel.filter(l => l !== 'otros').length - 1] || ''
+
+  const handleGuardarPaso2 = async (salir: boolean, avanzar?: number) => {
+    setGuardando(true)
+    setMensaje('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setGuardando(false); return }
+
+    const documentosUrls: Record<string, string> = {}
+    for (const [licId, archivo] of Object.entries(archivosLicencia)) {
+      if (archivo) {
+        const ext = archivo.name.split('.').pop()
+        const path = `${user.id}/licencia_${licId}.${ext}`
+        const { error: uploadError } = await supabase.storage.from('documentos').upload(path, archivo, { upsert: true })
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('documentos').getPublicUrl(path)
+          documentosUrls[licId] = urlData.publicUrl
+        }
+      }
+    }
+
+    const { error } = await supabase.from('profiles').update({
+      licencias: licenciasSel,
+      licencias_vencimientos: fechasVencimiento,
+      ...(Object.keys(documentosUrls).length ? { licencias_documentos: documentosUrls } : {}),
+    }).eq('id', user.id)
+
+    if (error) {
+      setMensaje('Error al guardar: ' + error.message)
+    } else {
+      setMensaje('✅ Progreso guardado')
+      if (salir) router.push('/dashboard/conductor')
+      else if (avanzar) setPasoActivo(avanzar)
+    }
+    setGuardando(false)
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -33,6 +90,8 @@ export default function CompletarPerfil() {
         setRegionSel(data.region || '')
         setComunaSel(data.comuna || '')
         setDispFueraRegion(data.disponibilidad_fuera_region || '')
+        setLicenciasSel(data.licencias || [])
+        setFechasVencimiento(data.licencias_vencimientos || {})
       }
     })
   }, [])
@@ -171,7 +230,7 @@ export default function CompletarPerfil() {
                 <p style={{ color: '#8fa3b8', fontSize: '0.85rem', margin: '2px 0 0' }}>Sigue estos pasos y obtén tu CV profesional</p>
               </div>
             </div>
-            <button onClick={() => handleGuardar(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
+            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : handleGuardarPaso2(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
           </div>
 
           {/* Stepper */}
@@ -179,8 +238,8 @@ export default function CompletarPerfil() {
             {pasos.map((p, i) => (
               <div key={p.num} style={{ display: 'flex', alignItems: 'center', flex: i < pasos.length - 1 ? 1 : 'none' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: pasoActivo === p.num ? '#2563eb' : '#e8eef5', color: pasoActivo === p.num ? 'white' : '#8fa3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem' }}>{p.num}</div>
-                  <div style={{ fontSize: '0.78rem', color: pasoActivo === p.num ? '#2563eb' : '#8fa3b8', fontWeight: pasoActivo === p.num ? 700 : 500, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.3 }}>{p.label}</div>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: pasoActivo >= p.num ? '#2563eb' : '#e8eef5', color: pasoActivo >= p.num ? 'white' : '#8fa3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem' }}>{pasoActivo > p.num ? '✓' : p.num}</div>
+                  <div style={{ fontSize: '0.78rem', color: pasoActivo >= p.num ? '#2563eb' : '#8fa3b8', fontWeight: pasoActivo >= p.num ? 700 : 500, textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.3 }}>{p.label}</div>
                 </div>
                 {i < pasos.length - 1 && <div style={{ flex: 1, height: '2px', background: pasoActivo > p.num ? '#2563eb' : '#e8eef5', margin: '0 8px', marginTop: '-20px' }} />}
               </div>
@@ -273,8 +332,65 @@ export default function CompletarPerfil() {
                 </div>
               </>
             )}
+            {pasoActivo === 2 && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <div style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px' }}>Paso 2 de 6</div>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1a3a5c', margin: 0 }}>Licencias</h2>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.88rem', margin: '4px 0 0' }}>Selecciona todas las licencias que posees</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '10px 16px' }}>
+                    <span style={{ color: '#22c55e', fontSize: '1.1rem' }}>🛡️</span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.82rem' }}>Tus licencias están seguras</div>
+                      <div style={{ color: '#8fa3b8', fontSize: '0.75rem' }}>Solo las empresas verificadas podrán verlas.</div>
+                    </div>
+                  </div>
+                </div>
 
-            {pasoActivo > 1 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', marginBottom: '14px' }}>Selecciona tus licencias</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                    {licenciasDisponibles.map(lic => (
+                      <div key={lic.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div onClick={() => toggleLicencia(lic.id)} style={{ position: 'relative', background: licenciasSel.includes(lic.id) ? '#eaf1fe' : '#fff', border: licenciasSel.includes(lic.id) ? '2px solid #2563eb' : '1px solid #e8eef5', borderRadius: '10px', padding: '20px 12px', textAlign: 'center', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={licenciasSel.includes(lic.id)} onChange={() => {}} onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: '10px', left: '10px', width: '16px', height: '16px', accentColor: '#2563eb', pointerEvents: 'none' }} />
+                          <div style={{ width: '46px', height: '46px', borderRadius: '10px', background: '#eef1f5', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                            <i className="ti ti-id-badge-2" style={{ fontSize: '1.4rem', color: '#8fa3b8' }}></i>
+                          </div>
+                          <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.92rem', marginBottom: '2px' }}>{lic.nombre}</div>
+                          <div style={{ color: '#8fa3b8', fontSize: '0.78rem' }}>{lic.desc}</div>
+                        </div>
+                        {licenciasSel.includes(lic.id) && (
+                          <>
+                            <div>
+                              <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '4px' }}>Vencimiento</label>
+                              <input type="date" value={fechasVencimiento[lic.id] || ''} onChange={e => setFechasVencimiento(prev => ({ ...prev, [lic.id]: e.target.value }))} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 8px', fontSize: '0.72rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                            </div>
+                            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '12px 4px', cursor: 'pointer', textAlign: 'center', background: '#fafbfc' }}>
+                              <i className="ti ti-cloud-upload" style={{ fontSize: '1.4rem', color: '#8fa3b8' }}></i>
+                              <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.8rem', wordBreak: 'break-all', maxWidth: '100%' }}>{archivosLicencia[lic.id] ? archivosLicencia[lic.id]!.name : 'Subir documento'}</span>
+                              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={e => setArchivosLicencia(prev => ({ ...prev, [lic.id]: e.target.files?.[0] || null }))} style={{ display: 'none' }} />
+                            </label>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+
+                {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => setPasoActivo(1)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Volver atrás</button>
+                  <button onClick={() => handleGuardarPaso2(false, 3)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>{guardando ? 'Guardando...' : 'Continuar →'}</button>
+                </div>
+              </>
+            )}
+
+            {pasoActivo > 2 && (
               <div style={{ textAlign: 'center', padding: '60px 0', color: '#8fa3b8' }}>
                 <p style={{ fontSize: '1rem' }}>Paso {pasoActivo}: {pasos[pasoActivo-1].label.replace('\\n',' ')} — próximamente</p>
                 <button onClick={() => setPasoActivo(pasoActivo - 1)} style={{ marginTop: '16px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px 24px', borderRadius: '8px', fontSize: '0.88rem', cursor: 'pointer' }}>← Volver</button>
