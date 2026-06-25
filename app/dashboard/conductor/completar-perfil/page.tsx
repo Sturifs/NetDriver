@@ -23,6 +23,16 @@ export default function CompletarPerfil() {
   const [archivoLicencia, setArchivoLicencia] = useState<File | null>(null)
   const [fechasVencimiento, setFechasVencimiento] = useState<Record<string, string>>({})
   const [archivosLicencia, setArchivosLicencia] = useState<Record<string, File | null>>({})
+  // Paso 3 - Experiencia
+  const [anosExp, setAnosExp] = useState('')
+  const [areasExp, setAreasExp] = useState<string[]>([])
+  const [otraArea, setOtraArea] = useState('')
+  const [tiposTrabajoExp, setTiposTrabajoExp] = useState<string[]>([])
+  const [otroTrabajo, setOtroTrabajo] = useState('')
+  const [turnosExp, setTurnosExp] = useState<string[]>([])
+  const [otroTurno, setOtroTurno] = useState('')
+  const [disponibilidadExp, setDisponibilidadExp] = useState<string[]>([])
+  const [movilidadPropia, setMovilidadPropia] = useState('')
 
   const licenciasDisponibles = [
     { id: 'A1', nombre: 'Clase A1', desc: 'Motocicletas' },
@@ -92,9 +102,44 @@ export default function CompletarPerfil() {
         setDispFueraRegion(data.disponibilidad_fuera_region || '')
         setLicenciasSel(data.licencias || [])
         setFechasVencimiento(data.licencias_vencimientos || {})
+        setAnosExp(data.anos_experiencia || '')
+        setAreasExp(data.areas_experiencia || [])
+        setOtraArea(data.otra_area || '')
+        setTiposTrabajoExp(data.tipos_trabajo || [])
+        setOtroTrabajo(data.otro_trabajo || '')
+        setTurnosExp(data.turnos_experiencia || [])
+        setOtroTurno(data.otro_turno || '')
+        setDisponibilidadExp(data.disponibilidad_trabajo || [])
+        setMovilidadPropia(data.movilidad_propia || '')
       }
     })
   }, [])
+
+  const handleGuardarPaso3 = async (salir: boolean, avanzar?: number) => {
+    setGuardando(true)
+    setMensaje('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setGuardando(false); return }
+    const { error } = await supabase.from('profiles').update({
+      anos_experiencia: anosExp,
+      areas_experiencia: areasExp,
+      otra_area: otraArea,
+      tipos_trabajo: tiposTrabajoExp,
+      otro_trabajo: otroTrabajo,
+      turnos_experiencia: turnosExp,
+      otro_turno: otroTurno,
+      disponibilidad_trabajo: disponibilidadExp,
+      movilidad_propia: movilidadPropia,
+    }).eq('id', user.id)
+    if (error) {
+      setMensaje('Error al guardar: ' + error.message)
+    } else {
+      setMensaje('✅ Progreso guardado')
+      if (salir) router.push('/dashboard/conductor')
+      else if (avanzar) setPasoActivo(avanzar)
+    }
+    setGuardando(false)
+  }
 
   const handleGuardar = async (salir: boolean, avanzar?: number) => {
     setGuardando(true)
@@ -230,7 +275,7 @@ export default function CompletarPerfil() {
                 <p style={{ color: '#8fa3b8', fontSize: '0.85rem', margin: '2px 0 0' }}>Sigue estos pasos y obtén tu CV profesional</p>
               </div>
             </div>
-            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : handleGuardarPaso2(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
+            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : pasoActivo === 2 ? handleGuardarPaso2(true) : handleGuardarPaso3(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
           </div>
 
           {/* Stepper */}
@@ -390,7 +435,135 @@ export default function CompletarPerfil() {
               </>
             )}
 
-            {pasoActivo > 2 && (
+            {pasoActivo === 3 && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <div style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px' }}>Paso 3 de 6</div>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1a3a5c', margin: 0 }}>Experiencia</h2>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.88rem', margin: '4px 0 0' }}>Cuéntanos sobre tu experiencia como conductor</p>
+                  </div>
+                  <div style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '10px 16px', display: 'flex', gap: '8px', alignItems: 'flex-start', minWidth: '200px' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1rem' }}>☆</span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.82rem', marginBottom: '2px' }}>Consejo</div>
+                      <div style={{ color: '#8fa3b8', fontSize: '0.75rem', lineHeight: 1.4 }}>Selecciona todas las opciones que apliquen a tu experiencia.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eef1f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="ti ti-steering-wheel" style={{ fontSize: '1.1rem', color: '#2563eb' }}></i>
+                      </div>
+                      <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>1. Años de experiencia como conductor</span>
+                    </div>
+                    {['Menos de 1 año', '1 a 3 años', '3 a 5 años', '5 a 10 años', 'Más de 10 años'].map(op => (
+                      <div key={op} onClick={() => setAnosExp(op)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: anosExp === op ? '#eaf1fe' : '#fff', border: anosExp === op ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                        <input type="radio" checked={anosExp === op} onChange={() => setAnosExp(op)} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
+                        {anosExp === op && <span style={{ marginLeft: 'auto', fontSize: '0.9rem' }}>🎖️</span>}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eef1f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="ti ti-truck" style={{ fontSize: '1.1rem', color: '#22c55e' }}></i>
+                      </div>
+                      <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>2. ¿En qué áreas has trabajado?</span>
+                    </div>
+                    {['Minería', 'Transporte de carga', 'Transporte de pasajeros', 'Construcción', 'Forestal', 'Agrícola', 'Logística / Otros'].map(op => (
+                      <div key={op} onClick={() => setAreasExp(prev => prev.includes(op) ? prev.filter(x => x !== op) : [...prev, op])} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: areasExp.includes(op) ? '#f0fdf4' : '#fff', border: areasExp.includes(op) ? '1.5px solid #22c55e' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={areasExp.includes(op)} onChange={() => {}} style={{ accentColor: '#22c55e', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
+                      </div>
+                    ))}
+                    <div onClick={() => setAreasExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #e8eef5', cursor: 'pointer', marginBottom: '6px', color: '#22c55e', fontSize: '0.83rem', fontWeight: 600 }}>
+                      <span>+</span><span>Otros</span>
+                    </div>
+                    {areasExp.includes('Otros') && <input value={otraArea} onChange={e => setOtraArea(e.target.value)} placeholder="Especifica el área" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '7px 10px', fontSize: '0.8rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />}
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eef1f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="ti ti-briefcase" style={{ fontSize: '1.1rem', color: '#7c3aed' }}></i>
+                      </div>
+                      <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>3. Tipo de trabajo que has realizado</span>
+                    </div>
+                    {['Conducción (Camiones)', 'Operación de maquinaria', 'Carga y descarga', 'Mantenimiento básico', 'Apoyo en faena'].map(op => (
+                      <div key={op} onClick={() => setTiposTrabajoExp(prev => prev.includes(op) ? prev.filter(x => x !== op) : [...prev, op])} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: tiposTrabajoExp.includes(op) ? '#f5f3ff' : '#fff', border: tiposTrabajoExp.includes(op) ? '1.5px solid #7c3aed' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={tiposTrabajoExp.includes(op)} onChange={() => {}} style={{ accentColor: '#7c3aed', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
+                      </div>
+                    ))}
+                    <div onClick={() => setTiposTrabajoExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #e8eef5', cursor: 'pointer', marginBottom: '6px', color: '#7c3aed', fontSize: '0.83rem', fontWeight: 600 }}>
+                      <span>+</span><span>Otros</span>
+                    </div>
+                    {tiposTrabajoExp.includes('Otros') && <input value={otroTrabajo} onChange={e => setOtroTrabajo(e.target.value)} placeholder="Especifica el trabajo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '7px 10px', fontSize: '0.8rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />}
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="ti ti-clock" style={{ fontSize: '1.1rem', color: '#f59e0b' }}></i>
+                      </div>
+                      <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>4. Turnos en los que tienes experiencia</span>
+                    </div>
+                    {['4x3', '7x7', '10x10', '14x14', '20x10', 'Sistema libre / Otros'].map(op => (
+                      <div key={op} onClick={() => setTurnosExp(prev => prev.includes(op) ? prev.filter(x => x !== op) : [...prev, op])} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: turnosExp.includes(op) ? '#fff7ed' : '#fff', border: turnosExp.includes(op) ? '1.5px solid #f59e0b' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={turnosExp.includes(op)} onChange={() => {}} style={{ accentColor: '#f59e0b', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
+                      </div>
+                    ))}
+                    <div onClick={() => setTurnosExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #fde68a', cursor: 'pointer', marginBottom: '6px', color: '#f59e0b', fontSize: '0.83rem', fontWeight: 600 }}>
+                      <span>+</span><span>Otros</span>
+                    </div>
+                    {turnosExp.includes('Otros') && <input value={otroTurno} onChange={e => setOtroTurno(e.target.value)} placeholder="Especifica el turno" style={{ width: '100%', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', padding: '7px 10px', fontSize: '0.8rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />}
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eef1f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <i className="ti ti-calendar" style={{ fontSize: '1.1rem', color: '#2563eb' }}></i>
+                      </div>
+                      <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>5. Disponibilidad para trabajar</span>
+                    </div>
+                    {['Inmediata', 'En 1 semana', 'En 2 semanas', 'En 1 mes o más', 'Actualmente trabajando'].map(op => (
+                      <div key={op} onClick={() => setDisponibilidadExp(prev => prev.includes(op) ? prev.filter(x => x !== op) : [...prev, op])} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: disponibilidadExp.includes(op) ? '#eaf1fe' : '#fff', border: disponibilidadExp.includes(op) ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={disponibilidadExp.includes(op)} onChange={() => {}} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: '12px' }}>
+                      <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem', marginBottom: '8px' }}>¿Dispones de movilidad propia?</div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <div onClick={() => setMovilidadPropia('si')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '8px', background: movilidadPropia === 'si' ? '#eaf1fe' : '#fff', border: movilidadPropia === 'si' ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer', fontSize: '0.83rem', color: '#1a3a5c', fontWeight: 600 }}>
+                          <input type="checkbox" checked={movilidadPropia === 'si'} onChange={() => {}} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />Sí
+                        </div>
+                        <div onClick={() => setMovilidadPropia('no')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '8px', background: movilidadPropia === 'no' ? '#eaf1fe' : '#fff', border: movilidadPropia === 'no' ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer', fontSize: '0.83rem', color: '#1a3a5c', fontWeight: 600 }}>
+                          <input type="checkbox" checked={movilidadPropia === 'no'} onChange={() => {}} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />No
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => setPasoActivo(2)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Volver atrás</button>
+                  <button onClick={() => handleGuardarPaso3(false, 4)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>{guardando ? 'Guardando...' : 'Continuar →'}</button>
+                </div>
+              </>
+            )}
+
+            {pasoActivo > 3 && (
               <div style={{ textAlign: 'center', padding: '60px 0', color: '#8fa3b8' }}>
                 <p style={{ fontSize: '1rem' }}>Paso {pasoActivo}: {pasos[pasoActivo-1].label.replace('\\n',' ')} — próximamente</p>
                 <button onClick={() => setPasoActivo(pasoActivo - 1)} style={{ marginTop: '16px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px 24px', borderRadius: '8px', fontSize: '0.88rem', cursor: 'pointer' }}>← Volver</button>
