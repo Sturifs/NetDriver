@@ -33,6 +33,29 @@ export default function CompletarPerfil() {
   const [otroTurno, setOtroTurno] = useState('')
   const [disponibilidadExp, setDisponibilidadExp] = useState<string[]>([])
   const [movilidadPropia, setMovilidadPropia] = useState('')
+  // Paso 4 - Equipos
+  const [equiposSel, setEquiposSel] = useState<string[]>([])
+  const [otrosCamion, setOtrosCamion] = useState('')
+  const [otrosMaquinaria, setOtrosMaquinaria] = useState('')
+  const [otrosIzaje, setOtrosIzaje] = useState('')
+  const [otrosEspeciales, setOtrosEspeciales] = useState('')
+  const [equiposDetalle, setEquiposDetalle] = useState<Record<string, {anos: string, dominio: string, marca: string, modelo: string}>>({})
+
+  const toggleEquipo = (id: string) => {
+    setEquiposSel(prev => {
+      if (prev.includes(id)) {
+        const next = prev.filter(e => e !== id)
+        setEquiposDetalle(d => { const nd = {...d}; delete nd[id]; return nd })
+        return next
+      }
+      setEquiposDetalle(d => ({ ...d, [id]: { anos: '', dominio: '', marca: '', modelo: '' } }))
+      return [...prev, id]
+    })
+  }
+
+  const updateDetalle = (equipo: string, campo: string, valor: string) => {
+    setEquiposDetalle(prev => ({ ...prev, [equipo]: { ...prev[equipo], [campo]: valor } }))
+  }
 
   const licenciasDisponibles = [
     { id: 'A1', nombre: 'Clase A1', desc: 'Motocicletas' },
@@ -111,9 +134,38 @@ export default function CompletarPerfil() {
         setOtroTurno(data.otro_turno || '')
         setDisponibilidadExp(data.disponibilidad_trabajo || [])
         setMovilidadPropia(data.movilidad_propia || '')
+        setEquiposSel(data.equipos_sel || [])
+        setEquiposDetalle(data.equipos_detalle || {})
+        setOtrosCamion(data.otros_camion || '')
+        setOtrosMaquinaria(data.otros_maquinaria || '')
+        setOtrosIzaje(data.otros_izaje || '')
+        setOtrosEspeciales(data.otros_especiales || '')
       }
     })
   }, [])
+
+  const handleGuardarPaso4 = async (salir: boolean, avanzar?: number) => {
+    setGuardando(true)
+    setMensaje('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setGuardando(false); return }
+    const { error } = await supabase.from('profiles').update({
+      equipos_sel: equiposSel,
+      equipos_detalle: equiposDetalle,
+      otros_camion: otrosCamion,
+      otros_maquinaria: otrosMaquinaria,
+      otros_izaje: otrosIzaje,
+      otros_especiales: otrosEspeciales,
+    }).eq('id', user.id)
+    if (error) {
+      setMensaje('Error al guardar: ' + error.message)
+    } else {
+      setMensaje('✅ Progreso guardado')
+      if (salir) router.push('/dashboard/conductor')
+      else if (avanzar) setPasoActivo(avanzar)
+    }
+    setGuardando(false)
+  }
 
   const handleGuardarPaso3 = async (salir: boolean, avanzar?: number) => {
     setGuardando(true)
@@ -275,7 +327,7 @@ export default function CompletarPerfil() {
                 <p style={{ color: '#8fa3b8', fontSize: '0.85rem', margin: '2px 0 0' }}>Sigue estos pasos y obtén tu CV profesional</p>
               </div>
             </div>
-            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : pasoActivo === 2 ? handleGuardarPaso2(true) : handleGuardarPaso3(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
+            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : pasoActivo === 2 ? handleGuardarPaso2(true) : pasoActivo === 3 ? handleGuardarPaso3(true) : handleGuardarPaso4(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
           </div>
 
           {/* Stepper */}
@@ -563,7 +615,186 @@ export default function CompletarPerfil() {
               </>
             )}
 
-            {pasoActivo > 3 && (
+            {pasoActivo === 4 && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <div style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px' }}>Paso 4 de 6</div>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1a3a5c', margin: 0 }}>Equipos</h2>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.88rem', margin: '4px 0 0' }}>Selecciona los equipos que sabes operar y completa tu experiencia.</p>
+                  </div>
+                  <div style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '10px 16px', display: 'flex', gap: '8px', alignItems: 'flex-start', minWidth: '200px' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1rem' }}>💡</span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#22c55e', fontSize: '0.82rem', marginBottom: '2px' }}>Consejo</div>
+                      <div style={{ color: '#8fa3b8', fontSize: '0.75rem', lineHeight: 1.4 }}>Esta información ayuda a las empresas a encontrar las oportunidades ideales para ti.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', marginBottom: '14px' }}>1. Selecciona los equipos que sabes operar</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+
+                    {/* Camiones */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#eaf1fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <i className="ti ti-truck" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        </div>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>1. Camiones</span>
+                      </div>
+                      {['Camión Tolva','Camión Pluma','Camión Aljibe','Camión Mixer','Camión Articulado','Rampla','Batea','Lowboy','Cama Baja'].map(eq => (
+                        <div key={eq} onClick={() => toggleEquipo(eq)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '6px', marginBottom: '4px', background: equiposSel.includes(eq) ? '#eaf1fe' : '#fafbfc', border: equiposSel.includes(eq) ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={equiposSel.includes(eq)} onChange={() => {}} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />
+                          <span style={{ fontSize: '0.82rem', color: '#1a3a5c' }}>{eq}</span>
+                        </div>
+                      ))}
+                      <div onClick={() => toggleEquipo('Otros-Camion')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px', background: equiposSel.includes('Otros-Camion') ? '#eaf1fe' : '#fafbfc', border: equiposSel.includes('Otros-Camion') ? '1.5px solid #2563eb' : '1px dashed #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={equiposSel.includes('Otros-Camion')} onChange={() => {}} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.82rem', color: '#2563eb', fontWeight: 600 }}>Otros</span>
+                      </div>
+                      {equiposSel.includes('Otros-Camion') && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <input value={otrosCamion} onChange={e => setOtrosCamion(e.target.value)} placeholder="Especifica el equipo" style={{ flex: 1, background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c' }} />
+                          <button onClick={() => { if (otrosCamion.trim()) { toggleEquipo(otrosCamion.trim()); setOtrosCamion('') } }} style={{ background: '#2563eb', border: 'none', color: 'white', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>Agregar</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Maquinaria pesada */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <i className="ti ti-bulldozer" style={{ fontSize: '1rem', color: '#22c55e' }}></i>
+                        </div>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>2. Maquinaria pesada</span>
+                      </div>
+                      {['Excavadora','Retroexcavadora','Bulldozer','Motoniveladora','Cargador Frontal','Rodillo Compactador','Mini cargador'].map(eq => (
+                        <div key={eq} onClick={() => toggleEquipo(eq)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '6px', marginBottom: '4px', background: equiposSel.includes(eq) ? '#f0fdf4' : '#fafbfc', border: equiposSel.includes(eq) ? '1.5px solid #22c55e' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={equiposSel.includes(eq)} onChange={() => {}} style={{ accentColor: '#22c55e', pointerEvents: 'none' }} />
+                          <span style={{ fontSize: '0.82rem', color: '#1a3a5c' }}>{eq}</span>
+                        </div>
+                      ))}
+                      <div onClick={() => toggleEquipo('Otros-Maquinaria')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px', background: equiposSel.includes('Otros-Maquinaria') ? '#f0fdf4' : '#fafbfc', border: equiposSel.includes('Otros-Maquinaria') ? '1.5px solid #22c55e' : '1px dashed #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={equiposSel.includes('Otros-Maquinaria')} onChange={() => {}} style={{ accentColor: '#22c55e', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.82rem', color: '#22c55e', fontWeight: 600 }}>Otros</span>
+                      </div>
+                      {equiposSel.includes('Otros-Maquinaria') && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <input value={otrosMaquinaria} onChange={e => setOtrosMaquinaria(e.target.value)} placeholder="Especifica el equipo" style={{ flex: 1, background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c' }} />
+                          <button onClick={() => { if (otrosMaquinaria.trim()) { toggleEquipo(otrosMaquinaria.trim()); setOtrosMaquinaria('') } }} style={{ background: '#22c55e', border: 'none', color: 'white', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>Agregar</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Izaje / Levante */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <i className="ti ti-crane" style={{ fontSize: '1rem', color: '#f59e0b' }}></i>
+                        </div>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>3. Izaje / Levante</span>
+                      </div>
+                      {['Grúa Horquilla','Grúa Móvil','Grúa Pluma','Manlift','Apilador'].map(eq => (
+                        <div key={eq} onClick={() => toggleEquipo(eq)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '6px', marginBottom: '4px', background: equiposSel.includes(eq) ? '#fff7ed' : '#fafbfc', border: equiposSel.includes(eq) ? '1.5px solid #f59e0b' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={equiposSel.includes(eq)} onChange={() => {}} style={{ accentColor: '#f59e0b', pointerEvents: 'none' }} />
+                          <span style={{ fontSize: '0.82rem', color: '#1a3a5c' }}>{eq}</span>
+                        </div>
+                      ))}
+                      <div onClick={() => toggleEquipo('Otros-Izaje')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px', background: equiposSel.includes('Otros-Izaje') ? '#fff7ed' : '#fafbfc', border: equiposSel.includes('Otros-Izaje') ? '1.5px solid #f59e0b' : '1px dashed #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={equiposSel.includes('Otros-Izaje')} onChange={() => {}} style={{ accentColor: '#f59e0b', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.82rem', color: '#f59e0b', fontWeight: 600 }}>Otros</span>
+                      </div>
+                      {equiposSel.includes('Otros-Izaje') && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <input value={otrosIzaje} onChange={e => setOtrosIzaje(e.target.value)} placeholder="Especifica el equipo" style={{ flex: 1, background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c' }} />
+                          <button onClick={() => { if (otrosIzaje.trim()) { toggleEquipo(otrosIzaje.trim()); setOtrosIzaje('') } }} style={{ background: '#f59e0b', border: 'none', color: 'white', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>Agregar</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Equipos especiales */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <i className="ti ti-settings" style={{ fontSize: '1rem', color: '#7c3aed' }}></i>
+                        </div>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>4. Equipos especiales</span>
+                      </div>
+                      {['Camión Combustible','Camión Ácido','Camión Explosivos','Ambulancia Industrial','Camión Lubricador'].map(eq => (
+                        <div key={eq} onClick={() => toggleEquipo(eq)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', borderRadius: '6px', marginBottom: '4px', background: equiposSel.includes(eq) ? '#f5f3ff' : '#fafbfc', border: equiposSel.includes(eq) ? '1.5px solid #7c3aed' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={equiposSel.includes(eq)} onChange={() => {}} style={{ accentColor: '#7c3aed', pointerEvents: 'none' }} />
+                          <span style={{ fontSize: '0.82rem', color: '#1a3a5c' }}>{eq}</span>
+                        </div>
+                      ))}
+                      <div onClick={() => toggleEquipo('Otros-Especiales')} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '6px', marginBottom: '6px', background: equiposSel.includes('Otros-Especiales') ? '#f5f3ff' : '#fafbfc', border: equiposSel.includes('Otros-Especiales') ? '1.5px solid #7c3aed' : '1px dashed #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={equiposSel.includes('Otros-Especiales')} onChange={() => {}} style={{ accentColor: '#7c3aed', pointerEvents: 'none' }} />
+                        <span style={{ fontSize: '0.82rem', color: '#7c3aed', fontWeight: 600 }}>Otros</span>
+                      </div>
+                      {equiposSel.includes('Otros-Especiales') && (
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <input value={otrosEspeciales} onChange={e => setOtrosEspeciales(e.target.value)} placeholder="Especifica el equipo" style={{ flex: 1, background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c' }} />
+                          <button onClick={() => { if (otrosEspeciales.trim()) { toggleEquipo(otrosEspeciales.trim()); setOtrosEspeciales('') } }} style={{ background: '#7c3aed', border: 'none', color: 'white', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>Agregar</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sección 2: Tabla de detalles */}
+                {equiposSel.filter(e => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).length > 0 && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', marginBottom: '14px' }}>
+                      2. Completa la experiencia de tus equipos seleccionados
+                    </h3>
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 160px 140px 40px', gap: '0', background: '#f4f7fa', padding: '10px 16px', fontSize: '0.78rem', fontWeight: 700, color: '#8fa3b8' }}>
+                        <div>Equipo</div>
+                        <div>Años de experiencia</div>
+                        <div>Nivel de dominio</div>
+                        <div>Marca (opcional)</div>
+                        <div>Modelo (opcional)</div>
+                        <div></div>
+                      </div>
+                      {equiposSel.filter(e => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).map(eq => (
+                        <div key={eq} style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 160px 140px 40px', gap: '0', padding: '10px 16px', borderTop: '1px solid #e8eef5', alignItems: 'center' }}>
+                          <div style={{ fontSize: '0.83rem', fontWeight: 600, color: '#1a3a5c' }}>{eq}</div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            {['<1','1-3','3-5','+5'].map(a => (
+                              <button key={a} onClick={() => updateDetalle(eq, 'anos', a)} style={{ padding: '4px 8px', borderRadius: '6px', border: 'none', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', background: equiposDetalle[eq]?.anos === a ? '#2563eb' : '#f4f7fa', color: equiposDetalle[eq]?.anos === a ? 'white' : '#8fa3b8' }}>{a}</button>
+                            ))}
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            {['Básico','Intermedio','Avanzado','Experto'].map(d => (
+                              <button key={d} onClick={() => updateDetalle(eq, 'dominio', d)} style={{ padding: '4px 6px', borderRadius: '6px', border: 'none', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', background: equiposDetalle[eq]?.dominio === d ? '#2563eb' : '#f4f7fa', color: equiposDetalle[eq]?.dominio === d ? 'white' : '#8fa3b8' }}>{d}</button>
+                            ))}
+                          </div>
+                          <div>
+                            <input value={equiposDetalle[eq]?.marca || ''} onChange={e => updateDetalle(eq, 'marca', e.target.value)} placeholder="Ej: Volvo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '5px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                          </div>
+                          <div>
+                            <input value={equiposDetalle[eq]?.modelo || ''} onChange={e => updateDetalle(eq, 'modelo', e.target.value)} placeholder="Ej: FMX 440" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '5px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <button onClick={() => toggleEquipo(eq)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: '1rem' }}>🗑️</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => setPasoActivo(3)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Volver atrás</button>
+                  <button onClick={() => handleGuardarPaso4(false, 5)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>{guardando ? 'Guardando...' : 'Continuar →'}</button>
+                </div>
+              </>
+            )}
+
+            {pasoActivo > 4 && (
               <div style={{ textAlign: 'center', padding: '60px 0', color: '#8fa3b8' }}>
                 <p style={{ fontSize: '1rem' }}>Paso {pasoActivo}: {pasos[pasoActivo-1].label.replace('\\n',' ')} — próximamente</p>
                 <button onClick={() => setPasoActivo(pasoActivo - 1)} style={{ marginTop: '16px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px 24px', borderRadius: '8px', fontSize: '0.88rem', cursor: 'pointer' }}>← Volver</button>
