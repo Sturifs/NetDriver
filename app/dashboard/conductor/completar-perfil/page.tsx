@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../../supabase'
 import { regiones, regionesComunas } from './regiones'
 
@@ -39,6 +39,50 @@ export default function CompletarPerfil() {
   const [otrosMaquinaria, setOtrosMaquinaria] = useState('')
   const [otrosIzaje, setOtrosIzaje] = useState('')
   const [otrosEspeciales, setOtrosEspeciales] = useState('')
+  // Paso 5 - Documentación
+  const [docHojaVida, setDocHojaVida] = useState<File | null>(null)
+  const [docHojaVidaUrl, setDocHojaVidaUrl] = useState('')
+  const [fechaHojaVida, setFechaHojaVida] = useState('')
+  const [noTengoHojaVida, setNoTengoHojaVida] = useState(false)
+  const [docAntecedentes, setDocAntecedentes] = useState<File | null>(null)
+  const [docAntecedentesUrl, setDocAntecedentesUrl] = useState('')
+  const [fechaAntecedentes, setFechaAntecedentes] = useState('')
+  const [noTengoAntecedentes, setNoTengoAntecedentes] = useState(false)
+  const [docCedulaFrontal, setDocCedulaFrontal] = useState<File | null>(null)
+  const [docCedulaFrontalUrl, setDocCedulaFrontalUrl] = useState('')
+  const [docCedulaReverso, setDocCedulaReverso] = useState<File | null>(null)
+  const [docCedulaReversoUrl, setDocCedulaReversoUrl] = useState('')
+  const [noTengoCedula, setNoTengoCedula] = useState(false)
+  const [docsCursos, setDocsCursos] = useState<File[]>([])
+  const [docsCursosUrls, setDocsCursosUrls] = useState<string[]>([])
+  const [estadoPreocupacional, setEstadoPreocupacional] = useState('')
+  const [docPreocupacional, setDocPreocupacional] = useState<File | null>(null)
+  const [docPreocupacionalUrl, setDocPreocupacionalUrl] = useState('')
+  const [noTengoPreocupacional, setNoTengoPreocupacional] = useState(false)
+  const [docsExperiencia, setDocsExperiencia] = useState<File[]>([])
+  const [docsExperienciaUrls, setDocsExperienciaUrls] = useState<string[]>([])
+  const [noTengoExpDoc, setNoTengoExpDoc] = useState(false)
+  const [docsFiniquitos, setDocsFiniquitos] = useState<File[]>([])
+  const [docsFiniquitosUrls, setDocsFiniquitosUrls] = useState<string[]>([])
+  const [noTengoFiniquitos, setNoTengoFiniquitos] = useState(false)
+  const [docResidencia, setDocResidencia] = useState<File | null>(null)
+  const [docResidenciaUrl, setDocResidenciaUrl] = useState('')
+  const [noTengoResidencia, setNoTengoResidencia] = useState(false)
+  const [docsOtros, setDocsOtros] = useState<File[]>([])
+  const [docsOtrosUrls, setDocsOtrosUrls] = useState<string[]>([])
+  const [noTengoOtros, setNoTengoOtros] = useState(false)
+  // Paso 6 - Foto y CV
+  const [fotoPerfil, setFotoPerfil] = useState<File | null>(null)
+  const [fotoPerfilUrl, setFotoPerfilUrl] = useState('')
+  const [fotoPreview, setFotoPreview] = useState('')
+
+  const handleFotoChange = (file: File | null) => {
+    if (!file) return
+    setFotoPerfil(file)
+    const reader = new FileReader()
+    reader.onload = e => setFotoPreview(e.target?.result as string)
+    reader.readAsDataURL(file)
+  }
   const [equiposDetalle, setEquiposDetalle] = useState<Record<string, {anos: string, dominio: string, marca: string, modelo: string}>>({})
 
   const toggleEquipo = (id: string) => {
@@ -140,9 +184,148 @@ export default function CompletarPerfil() {
         setOtrosMaquinaria(data.otros_maquinaria || '')
         setOtrosIzaje(data.otros_izaje || '')
         setOtrosEspeciales(data.otros_especiales || '')
+        setDocHojaVidaUrl(data.doc_hoja_vida_url || '')
+        setFechaHojaVida(data.fecha_hoja_vida || '')
+        setNoTengoHojaVida(data.no_tengo_hoja_vida || false)
+        setDocAntecedentesUrl(data.doc_antecedentes_url || '')
+        setFechaAntecedentes(data.fecha_antecedentes || '')
+        setNoTengoAntecedentes(data.no_tengo_antecedentes || false)
+        setDocCedulaFrontalUrl(data.doc_cedula_frontal_url || '')
+        setDocCedulaReversoUrl(data.doc_cedula_reverso_url || '')
+        setNoTengoCedula(data.no_tengo_cedula || false)
+        setDocsCursosUrls(data.docs_cursos_urls || [])
+        setEstadoPreocupacional(data.estado_preocupacional || '')
+        setDocPreocupacionalUrl(data.doc_preocupacional_url || '')
+        setNoTengoPreocupacional(data.no_tengo_preocupacional || false)
+        setDocsExperienciaUrls(data.docs_experiencia_urls || [])
+        setNoTengoExpDoc(data.no_tengo_exp_doc || false)
+        setDocsFiniquitosUrls(data.docs_finiquitos_urls || [])
+        setNoTengoFiniquitos(data.no_tengo_finiquitos || false)
+        setDocResidenciaUrl(data.doc_residencia_url || '')
+        setNoTengoResidencia(data.no_tengo_residencia || false)
+        setDocsOtrosUrls(data.docs_otros_urls || [])
+        setNoTengoOtros(data.no_tengo_otros || false)
+        setFotoPerfilUrl(data.foto_perfil_url || '')
+        if (data.foto_perfil_url) setFotoPreview(data.foto_perfil_url)
       }
     })
   }, [])
+
+  const subirArchivo = async (file: File, path: string): Promise<string> => {
+    const { error } = await supabase.storage.from('documentos').upload(path, file, { upsert: true })
+    if (error) return ''
+    const { data } = supabase.storage.from('documentos').getPublicUrl(path)
+    return data.publicUrl
+  }
+
+  const subirArchivos = async (files: File[], userId: string, prefijo: string): Promise<string[]> => {
+    const urls: string[] = []
+    for (let i = 0; i < files.length; i++) {
+      const ext = files[i].name.split('.').pop()
+      const url = await subirArchivo(files[i], `${userId}/${prefijo}_${i}.${ext}`)
+      if (url) urls.push(url)
+    }
+    return urls
+  }
+
+  const cvRef = useRef<HTMLDivElement>(null)
+
+  const descargarCV = async () => {
+    if (!cvRef.current) return
+    const html2canvas = (await import('html2canvas')).default
+    const jsPDF = (await import('jspdf')).default
+    const canvas = await html2canvas(cvRef.current, { scale: 2, useCORS: true })
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+    pdf.save(`CV_${nombreCompleto.replace(/ /g, '_') || 'NetDriver'}.pdf`)
+  }
+
+  const handleGuardarPaso6 = async (salir: boolean) => {
+    setGuardando(true)
+    setMensaje('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setGuardando(false); return }
+
+    let fotoUrl = fotoPerfilUrl
+    if (fotoPerfil) {
+      const ext = fotoPerfil.name.split('.').pop()
+      fotoUrl = await subirArchivo(fotoPerfil, `${user.id}/foto_perfil.${ext}`)
+    }
+
+    const { error } = await supabase.from('profiles').update({
+      foto_perfil_url: fotoUrl,
+      perfil_completo: true,
+    }).eq('id', user.id)
+
+    if (error) {
+      setMensaje('Error al guardar: ' + error.message)
+    } else {
+      setMensaje('✅ Perfil completado')
+      if (salir) router.push('/dashboard/conductor')
+    }
+    setGuardando(false)
+  }
+
+  const handleGuardarPaso5 = async (salir: boolean, avanzar?: number) => {
+    setGuardando(true)
+    setMensaje('')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setGuardando(false); return }
+
+    let hojaVidaUrl = docHojaVidaUrl
+    if (docHojaVida) hojaVidaUrl = await subirArchivo(docHojaVida, `${user.id}/hoja_vida.${docHojaVida.name.split('.').pop()}`)
+
+    let antecedentesUrl = docAntecedentesUrl
+    if (docAntecedentes) antecedentesUrl = await subirArchivo(docAntecedentes, `${user.id}/antecedentes.${docAntecedentes.name.split('.').pop()}`)
+
+    let cedulaFrontalUrl = docCedulaFrontalUrl
+    if (docCedulaFrontal) cedulaFrontalUrl = await subirArchivo(docCedulaFrontal, `${user.id}/cedula_frontal.${docCedulaFrontal.name.split('.').pop()}`)
+
+    let cedulaReversoUrl = docCedulaReversoUrl
+    if (docCedulaReverso) cedulaReversoUrl = await subirArchivo(docCedulaReverso, `${user.id}/cedula_reverso.${docCedulaReverso.name.split('.').pop()}`)
+
+    let cursosUrls = docsCursosUrls
+    if (docsCursos.length > 0) cursosUrls = await subirArchivos(docsCursos, user.id, 'curso')
+
+    let preocupacionalUrl = docPreocupacionalUrl
+    if (docPreocupacional) preocupacionalUrl = await subirArchivo(docPreocupacional, `${user.id}/preocupacional.${docPreocupacional.name.split('.').pop()}`)
+
+    let experienciaUrls = docsExperienciaUrls
+    if (docsExperiencia.length > 0) experienciaUrls = await subirArchivos(docsExperiencia, user.id, 'experiencia')
+
+    let finiquitosUrls = docsFiniquitosUrls
+    if (docsFiniquitos.length > 0) finiquitosUrls = await subirArchivos(docsFiniquitos, user.id, 'finiquito')
+
+    let residenciaUrl = docResidenciaUrl
+    if (docResidencia) residenciaUrl = await subirArchivo(docResidencia, `${user.id}/residencia.${docResidencia.name.split('.').pop()}`)
+
+    let otrosUrls = docsOtrosUrls
+    if (docsOtros.length > 0) otrosUrls = await subirArchivos(docsOtros, user.id, 'otro')
+
+    const { error } = await supabase.from('profiles').update({
+      doc_hoja_vida_url: hojaVidaUrl, fecha_hoja_vida: fechaHojaVida || null, no_tengo_hoja_vida: noTengoHojaVida,
+      doc_antecedentes_url: antecedentesUrl, fecha_antecedentes: fechaAntecedentes || null, no_tengo_antecedentes: noTengoAntecedentes,
+      doc_cedula_frontal_url: cedulaFrontalUrl, doc_cedula_reverso_url: cedulaReversoUrl, no_tengo_cedula: noTengoCedula,
+      docs_cursos_urls: cursosUrls,
+      estado_preocupacional: estadoPreocupacional, doc_preocupacional_url: preocupacionalUrl, no_tengo_preocupacional: noTengoPreocupacional,
+      docs_experiencia_urls: experienciaUrls, no_tengo_exp_doc: noTengoExpDoc,
+      docs_finiquitos_urls: finiquitosUrls, no_tengo_finiquitos: noTengoFiniquitos,
+      doc_residencia_url: residenciaUrl, no_tengo_residencia: noTengoResidencia,
+      docs_otros_urls: otrosUrls, no_tengo_otros: noTengoOtros,
+    }).eq('id', user.id)
+
+    if (error) {
+      setMensaje('Error al guardar: ' + error.message)
+    } else {
+      setMensaje('✅ Progreso guardado')
+      if (salir) router.push('/dashboard/conductor')
+      else if (avanzar) setPasoActivo(avanzar)
+    }
+    setGuardando(false)
+  }
 
   const handleGuardarPaso4 = async (salir: boolean, avanzar?: number) => {
     setGuardando(true)
@@ -327,7 +510,7 @@ export default function CompletarPerfil() {
                 <p style={{ color: '#8fa3b8', fontSize: '0.85rem', margin: '2px 0 0' }}>Sigue estos pasos y obtén tu CV profesional</p>
               </div>
             </div>
-            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : pasoActivo === 2 ? handleGuardarPaso2(true) : pasoActivo === 3 ? handleGuardarPaso3(true) : handleGuardarPaso4(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
+            <button onClick={() => pasoActivo === 1 ? handleGuardar(true) : pasoActivo === 2 ? handleGuardarPaso2(true) : pasoActivo === 3 ? handleGuardarPaso3(true) : pasoActivo === 4 ? handleGuardarPaso4(true) : pasoActivo === 5 ? handleGuardarPaso5(true) : handleGuardarPaso6(true)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: guardando ? 'wait' : 'pointer' }}>📄 {guardando ? 'Guardando...' : 'Guardar y salir'}</button>
           </div>
 
           {/* Stepper */}
@@ -794,11 +977,457 @@ export default function CompletarPerfil() {
               </>
             )}
 
-            {pasoActivo > 4 && (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#8fa3b8' }}>
-                <p style={{ fontSize: '1rem' }}>Paso {pasoActivo}: {pasos[pasoActivo-1].label.replace('\\n',' ')} — próximamente</p>
-                <button onClick={() => setPasoActivo(pasoActivo - 1)} style={{ marginTop: '16px', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px 24px', borderRadius: '8px', fontSize: '0.88rem', cursor: 'pointer' }}>← Volver</button>
-              </div>
+            {pasoActivo === 5 && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <div style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px' }}>Paso 5 de 6</div>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1a3a5c', margin: 0 }}>Documentación</h2>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.88rem', margin: '4px 0 0' }}>Sube los documentos que respaldan tu información.</p>
+                  </div>
+                  <div style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '10px 16px', display: 'flex', gap: '8px', alignItems: 'flex-start', minWidth: '200px' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1rem' }}>💡</span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#22c55e', fontSize: '0.82rem', marginBottom: '2px' }}>Consejo</div>
+                      <div style={{ color: '#8fa3b8', fontSize: '0.75rem', lineHeight: 1.4 }}>Entre más documentos cargues, más verificado y confiable será tu perfil.</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Documentos obligatorios */}
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '1rem' }}>🔒</span>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', margin: 0 }}>Documentos obligatorios</h3>
+                  </div>
+                  <p style={{ color: '#8fa3b8', fontSize: '0.82rem', marginBottom: '14px' }}>Estos documentos son obligatorios para completar tu perfil.</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+
+                    {/* Hoja de vida */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <i className="ti ti-file-text" style={{ fontSize: '1.2rem', color: '#2563eb' }}></i>
+                          <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>Hoja de vida del conductor</span>
+                        </div>
+                        <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>Obligatorio</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.78rem', marginBottom: '10px' }}>Tu currículum actualizado.</p>
+                      {(docHojaVida || docHojaVidaUrl) ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '6px 10px', marginBottom: '8px' }}>
+                          <span style={{ color: '#22c55e' }}>✅</span>
+                          <span style={{ fontSize: '0.78rem', color: '#1a3a5c', flex: 1 }}>{docHojaVida ? docHojaVida.name : 'Archivo cargado'}</span>
+                          <button onClick={() => { setDocHojaVida(null); setDocHojaVidaUrl('') }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#e74c3c' }}>🗑️</button>
+                        </div>
+                      ) : (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px dashed #e8eef5', borderRadius: '8px', padding: '10px', cursor: 'pointer', marginBottom: '8px', background: '#fafbfc' }}>
+                          <i className="ti ti-cloud-upload" style={{ fontSize: '1.2rem', color: '#8fa3b8' }}></i>
+                          <span style={{ color: '#2563eb', fontSize: '0.78rem', fontWeight: 600 }}>Subir archivo</span>
+                          <span style={{ color: '#8fa3b8', fontSize: '0.72rem' }}>PDF, JPG o PNG</span>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocHojaVida(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                        </label>
+                      )}
+                      <div style={{ marginBottom: '8px' }}>
+                        <label style={{ fontSize: '0.75rem', color: '#8fa3b8', display: 'block', marginBottom: '4px' }}>Fecha de emisión</label>
+                        <input type="date" value={fechaHojaVida} onChange={e => setFechaHojaVida(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#8fa3b8', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={noTengoHojaVida} onChange={e => setNoTengoHojaVida(e.target.checked)} style={{ accentColor: '#2563eb' }} />
+                        No lo tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Certificado de antecedentes */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <i className="ti ti-file-check" style={{ fontSize: '1.2rem', color: '#2563eb' }}></i>
+                          <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>Certificado de antecedentes</span>
+                        </div>
+                        <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>Obligatorio</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.78rem', marginBottom: '10px' }}>Debe estar vigente.</p>
+                      {(docAntecedentes || docAntecedentesUrl) ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '6px 10px', marginBottom: '8px' }}>
+                          <span style={{ color: '#22c55e' }}>✅</span>
+                          <span style={{ fontSize: '0.78rem', color: '#1a3a5c', flex: 1 }}>{docAntecedentes ? docAntecedentes.name : 'Archivo cargado'}</span>
+                          <button onClick={() => { setDocAntecedentes(null); setDocAntecedentesUrl('') }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#e74c3c' }}>🗑️</button>
+                        </div>
+                      ) : (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', border: '1.5px dashed #e8eef5', borderRadius: '8px', padding: '10px', cursor: 'pointer', marginBottom: '8px', background: '#fafbfc' }}>
+                          <i className="ti ti-cloud-upload" style={{ fontSize: '1.2rem', color: '#8fa3b8' }}></i>
+                          <span style={{ color: '#2563eb', fontSize: '0.78rem', fontWeight: 600 }}>Subir archivo</span>
+                          <span style={{ color: '#8fa3b8', fontSize: '0.72rem' }}>PDF, JPG o PNG</span>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocAntecedentes(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                        </label>
+                      )}
+                      <div style={{ marginBottom: '8px' }}>
+                        <label style={{ fontSize: '0.75rem', color: '#8fa3b8', display: 'block', marginBottom: '4px' }}>Fecha de emisión</label>
+                        <input type="date" value={fechaAntecedentes} onChange={e => setFechaAntecedentes(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#8fa3b8', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={noTengoAntecedentes} onChange={e => setNoTengoAntecedentes(e.target.checked)} style={{ accentColor: '#2563eb' }} />
+                        No lo tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Cédula de identidad */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <i className="ti ti-id-badge-2" style={{ fontSize: '1.2rem', color: '#2563eb' }}></i>
+                          <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>Cédula de identidad</span>
+                        </div>
+                        <span style={{ background: '#fee2e2', color: '#991b1b', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>Obligatorio</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.78rem', marginBottom: '10px' }}>Sube ambos lados de tu cédula.</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#8fa3b8', marginBottom: '4px', fontWeight: 600 }}>Frontal</div>
+                          {(docCedulaFrontal || docCedulaFrontalUrl) ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '5px 8px' }}>
+                              <span style={{ color: '#22c55e', fontSize: '0.8rem' }}>✅</span>
+                              <span style={{ fontSize: '0.72rem', color: '#1a3a5c', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{docCedulaFrontal ? docCedulaFrontal.name : 'Cargado'}</span>
+                              <button onClick={() => { setDocCedulaFrontal(null); setDocCedulaFrontalUrl('') }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: '0.8rem' }}>🗑️</button>
+                            </div>
+                          ) : (
+                            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', textAlign: 'center' }}>
+                              <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                              <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600 }}>Subir</span>
+                              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocCedulaFrontal(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                            </label>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.75rem', color: '#8fa3b8', marginBottom: '4px', fontWeight: 600 }}>Reverso</div>
+                          {(docCedulaReverso || docCedulaReversoUrl) ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '5px 8px' }}>
+                              <span style={{ color: '#22c55e', fontSize: '0.8rem' }}>✅</span>
+                              <span style={{ fontSize: '0.72rem', color: '#1a3a5c', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{docCedulaReverso ? docCedulaReverso.name : 'Cargado'}</span>
+                              <button onClick={() => { setDocCedulaReverso(null); setDocCedulaReversoUrl('') }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#e74c3c', fontSize: '0.8rem' }}>🗑️</button>
+                            </div>
+                          ) : (
+                            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', textAlign: 'center' }}>
+                              <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                              <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600 }}>Subir</span>
+                              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocCedulaReverso(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#8fa3b8', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={noTengoCedula} onChange={e => setNoTengoCedula(e.target.checked)} style={{ accentColor: '#2563eb' }} />
+                        No la tengo ahora
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Documentos recomendados */}
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '1rem' }}>⭐</span>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', margin: 0 }}>Documentos recomendados</h3>
+                  </div>
+                  <p style={{ color: '#8fa3b8', fontSize: '0.82rem', marginBottom: '14px' }}>Estos documentos no son obligatorios, pero te ayudan a destacar.</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px' }}>
+
+                    {/* Certificados de cursos */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <i className="ti ti-school" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Certificados de cursos</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.7rem', marginBottom: '8px' }}>Cursos realizados.</p>
+                      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', marginBottom: '6px' }}>
+                        <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                        <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>Subir archivos</span>
+                        <span style={{ color: '#8fa3b8', fontSize: '0.65rem', textAlign: 'center' }}>PDF, JPG o PNG</span>
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={e => setDocsCursos(Array.from(e.target.files || []))} style={{ display: 'none' }} />
+                      </label>
+                      {(docsCursos.length > 0 || docsCursosUrls.length > 0) && <div style={{ color: '#22c55e', fontSize: '0.7rem', fontWeight: 600 }}>✅ {docsCursos.length || docsCursosUrls.length} archivo(s) cargado(s)</div>}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#8fa3b8', cursor: 'pointer', marginTop: '6px' }}>
+                        <input type="checkbox" style={{ accentColor: '#2563eb' }} />No tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Examen preocupacional */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <i className="ti ti-heart-rate-monitor" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Examen preocupacional</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.7rem', marginBottom: '8px' }}>Vigencia del examen.</p>
+                      {['Vigente','Vencido','No tengo'].map(op => (
+                        <label key={op} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', color: estadoPreocupacional === op ? '#2563eb' : '#1a3a5c', cursor: 'pointer', marginBottom: '4px', fontWeight: estadoPreocupacional === op ? 700 : 400 }}>
+                          <input type="radio" checked={estadoPreocupacional === op} onChange={() => setEstadoPreocupacional(op)} style={{ accentColor: '#2563eb' }} />{op}
+                        </label>
+                      ))}
+                      {estadoPreocupacional === 'Vigente' && (
+                        <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '6px', cursor: 'pointer', background: '#fafbfc', marginTop: '6px' }}>
+                          <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                          <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600 }}>{docPreocupacional ? docPreocupacional.name : 'Subir archivo'}</span>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocPreocupacional(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                        </label>
+                      )}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#8fa3b8', cursor: 'pointer', marginTop: '6px' }}>
+                        <input type="checkbox" checked={noTengoPreocupacional} onChange={e => setNoTengoPreocupacional(e.target.checked)} style={{ accentColor: '#2563eb' }} />No tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Certificados de experiencia */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <i className="ti ti-briefcase" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Certificados de experiencia</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.7rem', marginBottom: '8px' }}>Cartas o certificados laborales.</p>
+                      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', marginBottom: '6px' }}>
+                        <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                        <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>Subir archivos</span>
+                        <span style={{ color: '#8fa3b8', fontSize: '0.65rem', textAlign: 'center' }}>PDF, JPG o PNG</span>
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={e => setDocsExperiencia(Array.from(e.target.files || []))} style={{ display: 'none' }} />
+                      </label>
+                      {(docsExperiencia.length > 0 || docsExperienciaUrls.length > 0) && <div style={{ color: '#22c55e', fontSize: '0.7rem', fontWeight: 600 }}>✅ {docsExperiencia.length || docsExperienciaUrls.length} archivo(s) cargado(s)</div>}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#8fa3b8', cursor: 'pointer', marginTop: '6px' }}>
+                        <input type="checkbox" checked={noTengoExpDoc} onChange={e => setNoTengoExpDoc(e.target.checked)} style={{ accentColor: '#2563eb' }} />No tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Finiquitos */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <i className="ti ti-file-invoice" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Finiquitos</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.7rem', marginBottom: '8px' }}>Documentos de término de contrato.</p>
+                      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', marginBottom: '6px' }}>
+                        <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                        <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>Subir archivos</span>
+                        <span style={{ color: '#8fa3b8', fontSize: '0.65rem', textAlign: 'center' }}>PDF, JPG o PNG</span>
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={e => setDocsFiniquitos(Array.from(e.target.files || []))} style={{ display: 'none' }} />
+                      </label>
+                      {(docsFiniquitos.length > 0 || docsFiniquitosUrls.length > 0) && <div style={{ color: '#22c55e', fontSize: '0.7rem', fontWeight: 600 }}>✅ {docsFiniquitos.length || docsFiniquitosUrls.length} archivo(s) cargado(s)</div>}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#8fa3b8', cursor: 'pointer', marginTop: '6px' }}>
+                        <input type="checkbox" checked={noTengoFiniquitos} onChange={e => setNoTengoFiniquitos(e.target.checked)} style={{ accentColor: '#2563eb' }} />No tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Certificado de residencia */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <i className="ti ti-home" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Certificado de residencia</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.7rem', marginBottom: '8px' }}>Certificado de residencia actual.</p>
+                      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', marginBottom: '6px' }}>
+                        <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                        <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>Subir archivos</span>
+                        <span style={{ color: '#8fa3b8', fontSize: '0.65rem', textAlign: 'center' }}>PDF, JPG o PNG</span>
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocResidencia(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                      </label>
+                      {(docResidencia || docResidenciaUrl) && <div style={{ color: '#22c55e', fontSize: '0.7rem', fontWeight: 600 }}>✅ {docResidencia ? docResidencia.name : 'Archivo cargado'}</div>}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#8fa3b8', cursor: 'pointer', marginTop: '6px' }}>
+                        <input type="checkbox" checked={noTengoResidencia} onChange={e => setNoTengoResidencia(e.target.checked)} style={{ accentColor: '#2563eb' }} />No tengo ahora
+                      </label>
+                    </div>
+
+                    {/* Otros documentos */}
+                    <div style={{ background: '#fff', border: '1px solid #e8eef5', borderRadius: '10px', padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                        <i className="ti ti-dots" style={{ fontSize: '1rem', color: '#2563eb' }}></i>
+                        <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Otros documentos</span>
+                      </div>
+                      <p style={{ color: '#8fa3b8', fontSize: '0.7rem', marginBottom: '8px' }}>Cualquier otro documento relevante.</p>
+                      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '8px', cursor: 'pointer', background: '#fafbfc', marginBottom: '6px' }}>
+                        <i className="ti ti-cloud-upload" style={{ fontSize: '1rem', color: '#8fa3b8' }}></i>
+                        <span style={{ color: '#2563eb', fontSize: '0.7rem', fontWeight: 600, textAlign: 'center' }}>Subir archivos</span>
+                        <span style={{ color: '#8fa3b8', fontSize: '0.65rem', textAlign: 'center' }}>PDF, JPG o PNG</span>
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={e => setDocsOtros(Array.from(e.target.files || []))} style={{ display: 'none' }} />
+                      </label>
+                      {(docsOtros.length > 0 || docsOtrosUrls.length > 0) && <div style={{ color: '#22c55e', fontSize: '0.7rem', fontWeight: 600 }}>✅ {docsOtros.length || docsOtrosUrls.length} archivo(s) cargado(s)</div>}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#8fa3b8', cursor: 'pointer', marginTop: '6px' }}>
+                        <input type="checkbox" checked={noTengoOtros} onChange={e => setNoTengoOtros(e.target.checked)} style={{ accentColor: '#2563eb' }} />No tengo ahora
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ background: '#eaf1fe', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '10px 14px', fontSize: '0.78rem', color: '#2563eb', marginBottom: '20px' }}>
+                  ℹ️ Puedes cargar documentos más adelante desde tu perfil. Los documentos pendientes no te impedirán completar tu perfil.
+                </div>
+
+                {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => setPasoActivo(4)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Volver atrás</button>
+                  <button onClick={() => handleGuardarPaso5(false, 6)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>{guardando ? 'Guardando...' : 'Continuar →'}</button>
+                </div>
+              </>
+            )}
+
+            {pasoActivo === 6 && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                  <div>
+                    <div style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.85rem', marginBottom: '4px' }}>Paso 6 de 6</div>
+                    <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1a3a5c', margin: 0 }}>Foto y CV</h2>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.88rem', margin: '4px 0 0' }}>Agrega tu foto de perfil y genera tu CV profesional.</p>
+                  </div>
+                  <div style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '10px 16px', display: 'flex', gap: '8px', alignItems: 'flex-start', minWidth: '200px' }}>
+                    <span style={{ color: '#f59e0b', fontSize: '1rem' }}>💡</span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#22c55e', fontSize: '0.82rem', marginBottom: '2px' }}>Consejo</div>
+                      <div style={{ color: '#8fa3b8', fontSize: '0.75rem', lineHeight: 1.4 }}>Una foto profesional y un CV completo aumentan tus oportunidades laborales.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '24px', marginBottom: '24px' }}>
+
+                  {/* Sección 1: Foto */}
+                  <div>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', marginBottom: '6px' }}>1. Agrega tu foto de perfil</h3>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.82rem', marginBottom: '14px' }}>Tu foto será visible para las empresas.</p>
+                    <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '2px dashed #e8eef5', borderRadius: '12px', padding: '32px 16px', cursor: 'pointer', background: '#fafbfc', marginBottom: '16px', minHeight: '200px' }}>
+                      {fotoPreview ? (
+                        <img src={fotoPreview} alt="Foto de perfil" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', marginBottom: '10px' }} />
+                      ) : (
+                        <>
+                          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#eef1f5', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+                            <i className="ti ti-user" style={{ fontSize: '2.5rem', color: '#8fa3b8' }}></i>
+                          </div>
+                          <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem', marginBottom: '4px' }}>Haz clic para subir tu foto</span>
+                          <span style={{ color: '#8fa3b8', fontSize: '0.78rem' }}>o arrastra y suelta aquí</span>
+                        </>
+                      )}
+                      <span style={{ color: '#8fa3b8', fontSize: '0.72rem', marginTop: '8px' }}>Formatos recomendados: JPG, PNG</span>
+                      <span style={{ color: '#8fa3b8', fontSize: '0.72rem' }}>Tamaño máximo: 5MB</span>
+                      <input type="file" accept=".jpg,.jpeg,.png" onChange={e => handleFotoChange(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                    </label>
+                    {fotoPreview && (
+                      <button onClick={() => { setFotoPerfil(null); setFotoPreview(''); setFotoPerfilUrl('') }} style={{ background: 'transparent', border: '1px solid #e8eef5', color: '#e74c3c', borderRadius: '6px', padding: '6px 14px', fontSize: '0.78rem', cursor: 'pointer', marginBottom: '12px' }}>🗑️ Eliminar foto</button>
+                    )}
+                    <div style={{ background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.82rem', marginBottom: '8px' }}>Recomendaciones para tu foto</div>
+                      {['Usa ropa adecuada para el trabajo', 'Fondo claro y buena iluminación', 'Foto de tu rostro, sin lentes oscuros ni gorro'].map(r => (
+                        <div key={r} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                          <span style={{ color: '#22c55e', fontSize: '0.85rem' }}>✅</span>
+                          <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>{r}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: '10px' }}>
+                      <span style={{ color: '#2563eb', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>👁 Vista previa de cómo te verán las empresas</span>
+                    </div>
+                  </div>
+
+                  {/* Sección 2: Vista previa CV */}
+                  <div>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c', marginBottom: '6px' }}>2. Vista previa de tu CV</h3>
+                    <p style={{ color: '#8fa3b8', fontSize: '0.82rem', marginBottom: '14px' }}>Así verán las empresas tu perfil profesional.</p>
+                    <div ref={cvRef} style={{ border: '1px solid #e8eef5', borderRadius: '12px', overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr' }}>
+                        {/* Columna izquierda oscura */}
+                        <div style={{ background: '#0d1f3c', padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 800, color: 'white', overflow: 'hidden' }}>
+                            {fotoPreview ? <img src={fotoPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (nombreCompleto.split(' ').map((n:string) => n[0]).join('').slice(0,2).toUpperCase() || 'FS')}
+                          </div>
+                          <div style={{ color: 'white', fontWeight: 700, fontSize: '0.88rem', textAlign: 'center' }}>{nombreCompleto || 'Franco Sturione'}</div>
+                          <div style={{ color: '#8fa3b8', fontSize: '0.72rem', textAlign: 'center' }}>Conductor Profesional</div>
+                          <div style={{ display: 'flex', gap: '2px' }}>{'★★★★★'.split('').map((s,i) => <span key={i} style={{ color: '#f59e0b', fontSize: '0.7rem' }}>{s}</span>)}</div>
+                          <div style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>4.8 (128 reseñas)</div>
+                          <div style={{ width: '100%', borderTop: '1px solid #1e3a5f', margin: '6px 0' }}></div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>📞</span><span style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>{telefono || '+56 9 1234 5678'}</span></div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>✉️</span><span style={{ color: '#8fa3b8', fontSize: '0.65rem', wordBreak: 'break-all' }}>{emailContacto || 'franco@email.com'}</span></div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>📍</span><span style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>{comunaSel || 'Chillán'}, {regionSel || 'Ñuble'}</span></div>
+                          <div style={{ background: '#1e3a5f', borderRadius: '6px', padding: '4px 10px', marginTop: '6px' }}>
+                            <span style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>Miembro desde 2024</span>
+                          </div>
+                        </div>
+                        {/* Columna derecha */}
+                        <div style={{ padding: '16px', background: '#fff' }}>
+                          <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#8fa3b8', letterSpacing: '0.08em', marginBottom: '4px' }}>PERFIL PROFESIONAL</div>
+                          <p style={{ fontSize: '0.75rem', color: '#1a3a5c', marginBottom: '12px', lineHeight: 1.4 }}>Conductor profesional con {anosExp || 'más de 8 años'} de experiencia en {areasExp.slice(0,2).join(' y ') || 'transporte de carga y pasajeros'}. Responsable, comprometido y enfocado en la seguridad.</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8fa3b8', letterSpacing: '0.08em', marginBottom: '4px' }}>LICENCIAS</div>
+                              {(licenciasSel.length > 0 ? licenciasSel.slice(0,3) : ['A2 Antigua','A4','A5']).map(l => <div key={l} style={{ fontSize: '0.7rem', color: '#1a3a5c' }}>{l}</div>)}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8fa3b8', letterSpacing: '0.08em', marginBottom: '4px' }}>EXPERIENCIA</div>
+                              <div style={{ fontSize: '0.7rem', color: '#1a3a5c', fontWeight: 700 }}>{anosExp || '8 años'}</div>
+                              <div style={{ fontSize: '0.7rem', color: '#8fa3b8' }}>en transporte</div>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8fa3b8', letterSpacing: '0.08em', marginBottom: '4px' }}>EQUIPOS</div>
+                              <div style={{ fontSize: '0.7rem', color: '#1a3a5c', fontWeight: 700 }}>{equiposSel.filter(e => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).length || 12} equipos</div>
+                              <div style={{ fontSize: '0.7rem', color: '#8fa3b8' }}>operados</div>
+                            </div>
+                          </div>
+                          <div style={{ borderTop: '1px solid #e8eef5', paddingTop: '10px', marginBottom: '10px' }}>
+                            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8fa3b8', letterSpacing: '0.08em', marginBottom: '6px' }}>EXPERIENCIA LABORAL</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1a3a5c' }}>Transportes del Norte SpA</div>
+                                <div style={{ fontSize: '0.7rem', color: '#8fa3b8' }}>Conductor de Camión Tolva</div>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '0.7rem', color: '#1a3a5c' }}>2019 - 2024</div>
+                                <div style={{ fontSize: '0.7rem', color: '#8fa3b8' }}>5 años</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ borderTop: '1px solid #e8eef5', paddingTop: '10px' }}>
+                            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#8fa3b8', letterSpacing: '0.08em', marginBottom: '6px' }}>DOCUMENTACIÓN</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <div>
+                                {['Hoja de vida','Certificado de antecedentes','Cursos y certificados'].map(d => (
+                                  <div key={d} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                    <span style={{ color: '#22c55e', fontSize: '0.7rem' }}>✅</span>
+                                    <span style={{ fontSize: '0.7rem', color: '#1a3a5c' }}>{d}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <span style={{ fontSize: '0.7rem', color: '#2563eb', cursor: 'pointer' }}>Ver todos los documentos &gt;</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                      <button onClick={descargarCV} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#fff', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                        <i className="ti ti-download" style={{ fontSize: '1rem' }}></i>
+                        <div><div>Descargar vista previa</div><div style={{ fontSize: '0.72rem', color: '#8fa3b8' }}>PDF</div></div>
+                      </button>
+                      <button onClick={() => setPasoActivo(1)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#f4f7fa', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                        <i className="ti ti-pencil" style={{ fontSize: '1rem' }}></i>
+                        <div><div>Editar información</div><div style={{ fontSize: '0.72rem', color: '#8fa3b8' }}>Volver a revisar mis datos</div></div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Banner final */}
+                <div style={{ background: '#eaf1fe', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                  <i className="ti ti-user-check" style={{ fontSize: '1.5rem', color: '#2563eb' }}></i>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem' }}>¡Ya casi estás listo!</div>
+                    <div style={{ color: '#8fa3b8', fontSize: '0.78rem' }}>Completa tu foto y genera tu CV para comenzar a postular a las mejores oportunidades.</div>
+                  </div>
+                </div>
+
+                {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
+
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => setPasoActivo(5)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Atrás</button>
+                  <button onClick={() => handleGuardarPaso6(false)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>
+                    <i className="ti ti-circle-check" style={{ fontSize: '1rem' }}></i>
+                    {guardando ? 'Guardando...' : 'Generar mi CV y finalizar'}
+                  </button>
+                </div>
+                <div style={{ textAlign: 'center', color: '#8fa3b8', fontSize: '0.75rem', marginTop: '8px' }}>🔒 Tu perfil quedará visible para las empresas</div>
+              </>
             )}
           </div>
         </div>
