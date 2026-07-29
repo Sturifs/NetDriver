@@ -6,6 +6,17 @@ import { regiones, regionesComunas } from './regiones'
 
 export default function CompletarPerfil() {
   const router = useRouter()
+  const calcularPorcentaje = (p: any) => {
+    if (!p) return 0
+    let pct = 0
+    if (p.nombre && p.rut && p.region && p.comuna && p.fecha_nacimiento && p.telefono && p.email) pct += 15
+    if (p.licencias && p.licencias.length > 0 && p.licencias.every((l: string) => p.licencias_vencimientos?.[l] && p.licencias_documentos?.[l])) pct += 15
+    if (p.anos_experiencia && p.areas_experiencia && p.areas_experiencia.length > 0 && p.tipos_trabajo && p.tipos_trabajo.length > 0 && p.turnos_experiencia && p.turnos_experiencia.length > 0 && p.disponibilidad_trabajo && p.disponibilidad_trabajo.length > 0 && p.movilidad_propia) pct += 15
+    if (p.equipos_sel && p.equipos_sel.length > 0) pct += 15
+    if (p.doc_hoja_vida_url || p.doc_antecedentes_url || p.doc_cedula_frontal_url) pct += 20
+    if (p.foto_perfil_url) pct += 20
+    return pct
+  }
   const [profile, setProfile] = useState<any>(null)
   const [pasoActivo, setPasoActivo] = useState(1)
   const [regionSel, setRegionSel] = useState('')
@@ -23,6 +34,7 @@ export default function CompletarPerfil() {
   const [archivoLicencia, setArchivoLicencia] = useState<File | null>(null)
   const [fechasVencimiento, setFechasVencimiento] = useState<Record<string, string>>({})
   const [archivosLicencia, setArchivosLicencia] = useState<Record<string, File | null>>({})
+  const [documentosLicenciaGuardados, setDocumentosLicenciaGuardados] = useState<Record<string, string>>({})
   // Paso 3 - Experiencia
   const [anosExp, setAnosExp] = useState('')
   const [areasExp, setAreasExp] = useState<string[]>([])
@@ -147,6 +159,7 @@ export default function CompletarPerfil() {
       setMensaje('Error al guardar: ' + error.message)
     } else {
       setMensaje('✅ Progreso guardado')
+      setProfile((prev: any) => ({ ...prev, licencias: licenciasSel, licencias_vencimientos: fechasVencimiento, ...(Object.keys(documentosUrls).length ? { licencias_documentos: documentosUrls } : {}) }))
       if (salir) router.push('/dashboard/conductor')
       else if (avanzar) setPasoActivo(avanzar)
     }
@@ -154,6 +167,9 @@ export default function CompletarPerfil() {
   }
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const paso = params.get('paso')
+    if (paso) setPasoActivo(parseInt(paso))
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/'); return }
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -169,6 +185,7 @@ export default function CompletarPerfil() {
         setDispFueraRegion(data.disponibilidad_fuera_region || '')
         setLicenciasSel(data.licencias || [])
         setFechasVencimiento(data.licencias_vencimientos || {})
+        setDocumentosLicenciaGuardados(data.licencias_documentos || {})
         setAnosExp(data.anos_experiencia || '')
         setAreasExp(data.areas_experiencia || [])
         setOtraArea(data.otra_area || '')
@@ -264,6 +281,7 @@ export default function CompletarPerfil() {
       setMensaje('Error al guardar: ' + error.message)
     } else {
       setMensaje('✅ Perfil completado')
+      setProfile((prev: any) => ({ ...prev, foto_perfil_url: fotoUrl, perfil_completo: true }))
       if (salir) router.push('/dashboard/conductor')
     }
     setGuardando(false)
@@ -321,6 +339,7 @@ export default function CompletarPerfil() {
       setMensaje('Error al guardar: ' + error.message)
     } else {
       setMensaje('✅ Progreso guardado')
+      setProfile((prev: any) => ({ ...prev, doc_hoja_vida_url: hojaVidaUrl, fecha_hoja_vida: fechaHojaVida || null, no_tengo_hoja_vida: noTengoHojaVida, doc_antecedentes_url: antecedentesUrl, fecha_antecedentes: fechaAntecedentes || null, no_tengo_antecedentes: noTengoAntecedentes, doc_cedula_frontal_url: cedulaFrontalUrl, doc_cedula_reverso_url: cedulaReversoUrl, no_tengo_cedula: noTengoCedula, docs_cursos_urls: cursosUrls, estado_preocupacional: estadoPreocupacional, doc_preocupacional_url: preocupacionalUrl, no_tengo_preocupacional: noTengoPreocupacional, docs_experiencia_urls: experienciaUrls, no_tengo_exp_doc: noTengoExpDoc, docs_finiquitos_urls: finiquitosUrls, no_tengo_finiquitos: noTengoFiniquitos, doc_residencia_url: residenciaUrl, no_tengo_residencia: noTengoResidencia, docs_otros_urls: otrosUrls, no_tengo_otros: noTengoOtros }))
       if (salir) router.push('/dashboard/conductor')
       else if (avanzar) setPasoActivo(avanzar)
     }
@@ -344,6 +363,7 @@ export default function CompletarPerfil() {
       setMensaje('Error al guardar: ' + error.message)
     } else {
       setMensaje('✅ Progreso guardado')
+      setProfile((prev: any) => ({ ...prev, equipos_sel: equiposSel, equipos_detalle: equiposDetalle, otros_camion: otrosCamion, otros_maquinaria: otrosMaquinaria, otros_izaje: otrosIzaje, otros_especiales: otrosEspeciales }))
       if (salir) router.push('/dashboard/conductor')
       else if (avanzar) setPasoActivo(avanzar)
     }
@@ -370,6 +390,7 @@ export default function CompletarPerfil() {
       setMensaje('Error al guardar: ' + error.message)
     } else {
       setMensaje('✅ Progreso guardado')
+      setProfile((prev: any) => ({ ...prev, anos_experiencia: anosExp, areas_experiencia: areasExp, otra_area: otraArea, tipos_trabajo: tiposTrabajoExp, otro_trabajo: otroTrabajo, turnos_experiencia: turnosExp, otro_turno: otroTurno, disponibilidad_trabajo: disponibilidadExp, movilidad_propia: movilidadPropia }))
       if (salir) router.push('/dashboard/conductor')
       else if (avanzar) setPasoActivo(avanzar)
     }
@@ -401,6 +422,7 @@ export default function CompletarPerfil() {
       setMensaje('Error al guardar: ' + error.message)
     } else {
       setMensaje('✅ Progreso guardado')
+      setProfile((prev: any) => ({ ...prev, nombre, apellido, rut, fecha_nacimiento: fechaNacimiento || null, telefono, email: emailContacto, region: regionSel, comuna: comunaSel, disponibilidad_fuera_region: dispFueraRegion }))
       if (salir) router.push('/dashboard/conductor')
       else if (avanzar) setPasoActivo(avanzar)
     }
@@ -448,9 +470,9 @@ export default function CompletarPerfil() {
               <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
                 <svg width="48" height="48" viewBox="0 0 48 48">
                   <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4"/>
-                  <circle cx="24" cy="24" r="20" fill="none" stroke="#22c55e" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset="18.8" strokeLinecap="round" transform="rotate(-90 24 24)"/>
+                  <circle cx="24" cy="24" r="20" fill="none" stroke="#22c55e" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset={125.6 - (125.6 * calcularPorcentaje(profile)) / 100} strokeLinecap="round" transform="rotate(-90 24 24)"/>
                 </svg>
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '0.65rem', fontWeight: 700, color: 'white' }}>85%</div>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '0.65rem', fontWeight: 700, color: 'white' }}>{calcularPorcentaje(profile)}%</div>
               </div>
               <div>
                 <div style={{ fontWeight: 700, color: 'white', fontSize: '0.8rem' }}>Perfil incompleto</div>
@@ -549,10 +571,12 @@ export default function CompletarPerfil() {
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Nombre completo</label>
                     <input value={nombreCompleto} onChange={e => setNombreCompleto(e.target.value)} placeholder="Ingresa tu nombre completo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    {!nombreCompleto && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>RUT</label>
                     <input value={rut} onChange={e => setRut(e.target.value)} placeholder="12.345.678-9" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    {!rut && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                 </div>
 
@@ -560,10 +584,12 @@ export default function CompletarPerfil() {
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Fecha de nacimiento</label>
                     <input type="date" value={fechaNacimiento} onChange={e => setFechaNacimiento(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    {!fechaNacimiento && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Teléfono</label>
                     <input value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="+56 9 1234 5678" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    {!telefono && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                 </div>
 
@@ -571,6 +597,7 @@ export default function CompletarPerfil() {
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Correo electrónico</label>
                     <input value={emailContacto} onChange={e => setEmailContacto(e.target.value)} placeholder="correo@ejemplo.com" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '11px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                    {!emailContacto && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Región</label>
@@ -578,6 +605,7 @@ export default function CompletarPerfil() {
                       <option value="">Selecciona tu región</option>
                       {regiones.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
+                    {!regionSel && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                 </div>
 
@@ -588,6 +616,7 @@ export default function CompletarPerfil() {
                       <option value="">{regionSel ? 'Selecciona tu comuna' : 'Primero selecciona una región'}</option>
                       {regionSel && regionesComunas[regionSel]?.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    {!comunaSel && <div style={{ color: '#e11d48', fontSize: '0.72rem', marginTop: '4px' }}>Campo obligatorio</div>}
                   </div>
                   <div>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '6px' }}>Disponibilidad para trabajar fuera de su región</label>
@@ -647,17 +676,20 @@ export default function CompletarPerfil() {
                             <div>
                               <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#1a3a5c', display: 'block', marginBottom: '4px' }}>Vencimiento</label>
                               <input type="date" value={fechasVencimiento[lic.id] || ''} onChange={e => setFechasVencimiento(prev => ({ ...prev, [lic.id]: e.target.value }))} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 8px', fontSize: '0.72rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
+                              {!fechasVencimiento[lic.id] && <div style={{ color: '#e11d48', fontSize: '0.65rem', marginTop: '3px' }}>Obligatorio</div>}
                             </div>
                             <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', border: '1.5px dashed #e8eef5', borderRadius: '6px', padding: '12px 4px', cursor: 'pointer', textAlign: 'center', background: '#fafbfc' }}>
                               <i className="ti ti-cloud-upload" style={{ fontSize: '1.4rem', color: '#8fa3b8' }}></i>
-                              <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.8rem', wordBreak: 'break-all', maxWidth: '100%' }}>{archivosLicencia[lic.id] ? archivosLicencia[lic.id]!.name : 'Subir documento'}</span>
+                              <span style={{ color: '#2563eb', fontWeight: 600, fontSize: '0.8rem', wordBreak: 'break-all', maxWidth: '100%' }}>{archivosLicencia[lic.id] ? archivosLicencia[lic.id]!.name : (documentosLicenciaGuardados[lic.id] ? 'Documento subido' : 'Subir documento')}</span>
                               <input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={e => setArchivosLicencia(prev => ({ ...prev, [lic.id]: e.target.files?.[0] || null }))} style={{ display: 'none' }} />
                             </label>
+                            {!archivosLicencia[lic.id] && !documentosLicenciaGuardados[lic.id] && <div style={{ color: '#e11d48', fontSize: '0.65rem', marginTop: '3px' }}>Obligatorio</div>}
                           </>
                         )}
                       </div>
                     ))}
                   </div>
+                  {licenciasSel.length === 0 && <div style={{ color: '#e11d48', fontSize: '0.8rem', marginTop: '10px' }}>Debes seleccionar al menos una licencia</div>}
                 </div>
 
 
@@ -697,12 +729,13 @@ export default function CompletarPerfil() {
                       <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem' }}>1. Años de experiencia como conductor</span>
                     </div>
                     {['Menos de 1 año', '1 a 3 años', '3 a 5 años', '5 a 10 años', 'Más de 10 años'].map(op => (
-                      <div key={op} onClick={() => setAnosExp(op)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: anosExp === op ? '#eaf1fe' : '#fff', border: anosExp === op ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer' }}>
-                        <input type="radio" checked={anosExp === op} onChange={() => setAnosExp(op)} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />
+                      <div key={op} onClick={() => setAnosExp(anosExp === op ? '' : op)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', marginBottom: '6px', background: anosExp === op ? '#eaf1fe' : '#fff', border: anosExp === op ? '1.5px solid #2563eb' : '1px solid #e8eef5', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={anosExp === op} onChange={() => setAnosExp(anosExp === op ? '' : op)} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />
                         <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
                         {anosExp === op && <span style={{ marginLeft: 'auto', fontSize: '0.9rem' }}>🎖️</span>}
                       </div>
                     ))}
+                    {!anosExp && <div style={{ color: '#e11d48', fontSize: '0.78rem', marginTop: '6px' }}>Debes elegir al menos una opción</div>}
                   </div>
 
                   <div>
@@ -718,6 +751,7 @@ export default function CompletarPerfil() {
                         <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
                       </div>
                     ))}
+                    {areasExp.length === 0 && <div style={{ color: '#e11d48', fontSize: '0.78rem', marginTop: '6px' }}>Debes elegir al menos una opción</div>}
                     <div onClick={() => setAreasExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #e8eef5', cursor: 'pointer', marginBottom: '6px', color: '#22c55e', fontSize: '0.83rem', fontWeight: 600 }}>
                       <span>+</span><span>Otros</span>
                     </div>
@@ -737,7 +771,8 @@ export default function CompletarPerfil() {
                         <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
                       </div>
                     ))}
-                    <div onClick={() => setTiposTrabajoExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #e8eef5', cursor: 'pointer', marginBottom: '6px', color: '#7c3aed', fontSize: '0.83rem', fontWeight: 600 }}>
+                    {tiposTrabajoExp.length === 0 && <div style={{ color: '#e11d48', fontSize: '0.78rem', marginTop: '6px' }}>Debes elegir al menos una opción</div>}
+                    <div onClick={() => setTiposTrabajoExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: tiposTrabajoExp.includes('Otros') ? '1.5px solid #7c3aed' : '1px dashed #e8eef5', background: tiposTrabajoExp.includes('Otros') ? '#f5f3ff' : 'transparent', cursor: 'pointer', marginBottom: '6px', color: '#7c3aed', fontSize: '0.83rem', fontWeight: 600 }}>
                       <span>+</span><span>Otros</span>
                     </div>
                     {tiposTrabajoExp.includes('Otros') && <input value={otroTrabajo} onChange={e => setOtroTrabajo(e.target.value)} placeholder="Especifica el trabajo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '7px 10px', fontSize: '0.8rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />}
@@ -756,7 +791,8 @@ export default function CompletarPerfil() {
                         <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
                       </div>
                     ))}
-                    <div onClick={() => setTurnosExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: '1px dashed #fde68a', cursor: 'pointer', marginBottom: '6px', color: '#f59e0b', fontSize: '0.83rem', fontWeight: 600 }}>
+                    {turnosExp.length === 0 && <div style={{ color: '#e11d48', fontSize: '0.78rem', marginTop: '6px' }}>Debes elegir al menos una opción</div>}
+                    <div onClick={() => setTurnosExp(prev => prev.includes('Otros') ? prev.filter(x => x !== 'Otros') : [...prev, 'Otros'])} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px', border: turnosExp.includes('Otros') ? '1.5px solid #f59e0b' : '1px dashed #fde68a', background: turnosExp.includes('Otros') ? '#fff7ed' : 'transparent', cursor: 'pointer', marginBottom: '6px', color: '#f59e0b', fontSize: '0.83rem', fontWeight: 600 }}>
                       <span>+</span><span>Otros</span>
                     </div>
                     {turnosExp.includes('Otros') && <input value={otroTurno} onChange={e => setOtroTurno(e.target.value)} placeholder="Especifica el turno" style={{ width: '100%', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px', padding: '7px 10px', fontSize: '0.8rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />}
@@ -775,6 +811,7 @@ export default function CompletarPerfil() {
                         <span style={{ fontSize: '0.83rem', color: '#1a3a5c' }}>{op}</span>
                       </div>
                     ))}
+                    {disponibilidadExp.length === 0 && <div style={{ color: '#e11d48', fontSize: '0.78rem', marginTop: '6px' }}>Debes elegir al menos una opción</div>}
                     <div style={{ marginTop: '12px' }}>
                       <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.85rem', marginBottom: '8px' }}>¿Dispones de movilidad propia?</div>
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -785,6 +822,7 @@ export default function CompletarPerfil() {
                           <input type="checkbox" checked={movilidadPropia === 'no'} onChange={() => {}} style={{ accentColor: '#2563eb', pointerEvents: 'none' }} />No
                         </div>
                       </div>
+                      {!movilidadPropia && <div style={{ color: '#e11d48', fontSize: '0.78rem', marginTop: '8px' }}>Debes indicar si tienes movilidad propia</div>}
                     </div>
                   </div>
                 </div>
@@ -1396,7 +1434,7 @@ export default function CompletarPerfil() {
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
-                      <button onClick={descargarCV} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#fff', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                      <button onClick={() => router.push('/dashboard/conductor/cv')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#fff', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
                         <i className="ti ti-download" style={{ fontSize: '1rem' }}></i>
                         <div><div>Descargar vista previa</div><div style={{ fontSize: '0.72rem', color: '#8fa3b8' }}>PDF</div></div>
                       </button>
@@ -1420,7 +1458,7 @@ export default function CompletarPerfil() {
                 {mensaje && <div style={{ fontSize: '0.85rem', color: mensaje.includes('Error') ? '#e74c3c' : '#22c55e', marginBottom: '16px', textAlign: 'right' }}>{mensaje}</div>}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <button onClick={() => setPasoActivo(5)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Atrás</button>
+                  <button onClick={() => setPasoActivo(5)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: 'pointer' }}>← Volver atrás</button>
                   <button onClick={() => handleGuardarPaso6(false)} disabled={guardando} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#2563eb', border: 'none', color: 'white', padding: '12px 28px', borderRadius: '8px', fontSize: '0.92rem', fontWeight: 700, cursor: guardando ? 'wait' : 'pointer' }}>
                     <i className="ti ti-circle-check" style={{ fontSize: '1rem' }}></i>
                     {guardando ? 'Guardando...' : 'Generar mi CV y finalizar'}

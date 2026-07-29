@@ -5,6 +5,18 @@ import { supabase } from '../../supabase'
 
 export default function DashboardConductor() {
   const router = useRouter()
+
+  const calcularPorcentaje = (p: any) => {
+    if (!p) return 0
+    let pct = 0
+    if (p.nombre && p.rut && p.region && p.comuna && p.fecha_nacimiento && p.telefono && p.email) pct += 15
+    if (p.licencias && p.licencias.length > 0 && p.licencias.every((l: string) => p.licencias_vencimientos?.[l] && p.licencias_documentos?.[l])) pct += 15
+    if (p.anos_experiencia && p.areas_experiencia && p.areas_experiencia.length > 0 && p.tipos_trabajo && p.tipos_trabajo.length > 0 && p.turnos_experiencia && p.turnos_experiencia.length > 0 && p.disponibilidad_trabajo && p.disponibilidad_trabajo.length > 0 && p.movilidad_propia) pct += 15
+    if (p.equipos_sel && p.equipos_sel.length > 0) pct += 15
+    if (p.doc_hoja_vida_url || p.doc_antecedentes_url || p.doc_cedula_frontal_url) pct += 20
+    if (p.foto_perfil_url) pct += 20
+    return pct
+  }
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [navActivo, setNavActivo] = useState('inicio')
@@ -113,9 +125,9 @@ export default function DashboardConductor() {
                 <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0 }}>
                   <svg width="48" height="48" viewBox="0 0 48 48">
                     <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="4"/>
-                    <circle cx="24" cy="24" r="20" fill="none" stroke="#22c55e" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset="18.8" strokeLinecap="round" transform="rotate(-90 24 24)"/>
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="#22c55e" strokeWidth="4" strokeDasharray="125.6" strokeDashoffset={125.6 - (125.6 * calcularPorcentaje(profile)) / 100} strokeLinecap="round" transform="rotate(-90 24 24)"/>
                   </svg>
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '0.65rem', fontWeight: 700, color: 'white' }}>85%</div>
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '0.65rem', fontWeight: 700, color: 'white' }}>{calcularPorcentaje(profile)}%</div>
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, color: 'white', fontSize: '0.8rem' }}>Perfil incompleto</div>
