@@ -12,7 +12,7 @@ export default function DashboardConductor() {
     if (p.nombre && p.rut && p.region && p.comuna && p.fecha_nacimiento && p.telefono && p.email) pct += 15
     if (p.licencias && p.licencias.length > 0 && p.licencias.every((l: string) => p.licencias_vencimientos?.[l] && p.licencias_documentos?.[l])) pct += 15
     if (p.anos_experiencia && p.areas_experiencia && p.areas_experiencia.length > 0 && p.tipos_trabajo && p.tipos_trabajo.length > 0 && p.turnos_experiencia && p.turnos_experiencia.length > 0 && p.disponibilidad_trabajo && p.disponibilidad_trabajo.length > 0 && p.movilidad_propia) pct += 15
-    if (p.equipos_sel && p.equipos_sel.length > 0) pct += 15
+    if (p.equipos_sel && p.equipos_sel.filter((e: string) => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).length > 0 && p.equipos_sel.filter((e: string) => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).every((e: string) => p.equipos_detalle?.[e]?.anos && p.equipos_detalle?.[e]?.dominio)) pct += 15
     if (p.doc_hoja_vida_url || p.doc_antecedentes_url || p.doc_cedula_frontal_url) pct += 20
     if (p.foto_perfil_url) pct += 20
     return pct
@@ -95,7 +95,7 @@ export default function DashboardConductor() {
               <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: 'white', fontSize: '1.4rem', border: profile?.perfilCompleto ? '3px solid #22c55e' : '3px solid #2563eb' }}>
                 {profile?.nombre?.[0]}{profile?.apellido?.[0]}
               </div>
-              {profile?.perfilCompleto && (
+              {calcularPorcentaje(profile) === 100 && (
                 <div style={{ position: 'absolute', bottom: 0, right: 0, width: '20px', height: '20px', borderRadius: '50%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white', border: '2px solid #020D24' }}>✓</div>
               )}
             </div>

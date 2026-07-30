@@ -12,7 +12,7 @@ export default function CompletarPerfil() {
     if (p.nombre && p.rut && p.region && p.comuna && p.fecha_nacimiento && p.telefono && p.email) pct += 15
     if (p.licencias && p.licencias.length > 0 && p.licencias.every((l: string) => p.licencias_vencimientos?.[l] && p.licencias_documentos?.[l])) pct += 15
     if (p.anos_experiencia && p.areas_experiencia && p.areas_experiencia.length > 0 && p.tipos_trabajo && p.tipos_trabajo.length > 0 && p.turnos_experiencia && p.turnos_experiencia.length > 0 && p.disponibilidad_trabajo && p.disponibilidad_trabajo.length > 0 && p.movilidad_propia) pct += 15
-    if (p.equipos_sel && p.equipos_sel.length > 0) pct += 15
+    if (p.equipos_sel && p.equipos_sel.filter((e: string) => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).length > 0 && p.equipos_sel.filter((e: string) => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).every((e: string) => p.equipos_detalle?.[e]?.anos && p.equipos_detalle?.[e]?.dominio)) pct += 15
     if (p.doc_hoja_vida_url || p.doc_antecedentes_url || p.doc_cedula_frontal_url) pct += 20
     if (p.foto_perfil_url) pct += 20
     return pct
@@ -963,6 +963,7 @@ export default function CompletarPerfil() {
                   </div>
                 </div>
 
+                {equiposSel.filter(e => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).length === 0 && <div style={{ color: '#e11d48', fontSize: '0.85rem', marginBottom: '16px' }}>Debes elegir al menos un equipo</div>}
                 {/* Sección 2: Tabla de detalles */}
                 {equiposSel.filter(e => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(e)).length > 0 && (
                   <div style={{ marginBottom: '24px' }}>
@@ -985,11 +986,13 @@ export default function CompletarPerfil() {
                             {['<1','1-3','3-5','+5'].map(a => (
                               <button key={a} onClick={() => updateDetalle(eq, 'anos', a)} style={{ padding: '4px 8px', borderRadius: '6px', border: 'none', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', background: equiposDetalle[eq]?.anos === a ? '#2563eb' : '#f4f7fa', color: equiposDetalle[eq]?.anos === a ? 'white' : '#8fa3b8' }}>{a}</button>
                             ))}
+                            {!equiposDetalle[eq]?.anos && <div style={{ color: '#e11d48', fontSize: '0.65rem', marginTop: '4px' }}>Obligatorio</div>}
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             {['Básico','Intermedio','Avanzado','Experto'].map(d => (
                               <button key={d} onClick={() => updateDetalle(eq, 'dominio', d)} style={{ padding: '4px 6px', borderRadius: '6px', border: 'none', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', background: equiposDetalle[eq]?.dominio === d ? '#2563eb' : '#f4f7fa', color: equiposDetalle[eq]?.dominio === d ? 'white' : '#8fa3b8' }}>{d}</button>
                             ))}
+                            {!equiposDetalle[eq]?.dominio && <div style={{ color: '#e11d48', fontSize: '0.65rem', marginTop: '4px' }}>Obligatorio</div>}
                           </div>
                           <div>
                             <input value={equiposDetalle[eq]?.marca || ''} onChange={e => updateDetalle(eq, 'marca', e.target.value)} placeholder="Ej: Volvo" style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '5px 8px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
@@ -1069,10 +1072,6 @@ export default function CompletarPerfil() {
                         <label style={{ fontSize: '0.75rem', color: '#8fa3b8', display: 'block', marginBottom: '4px' }}>Fecha de emisión</label>
                         <input type="date" value={fechaHojaVida} onChange={e => setFechaHojaVida(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                       </div>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#8fa3b8', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={noTengoHojaVida} onChange={e => setNoTengoHojaVida(e.target.checked)} style={{ accentColor: '#2563eb' }} />
-                        No lo tengo ahora
-                      </label>
                     </div>
 
                     {/* Certificado de antecedentes */}
@@ -1103,10 +1102,6 @@ export default function CompletarPerfil() {
                         <label style={{ fontSize: '0.75rem', color: '#8fa3b8', display: 'block', marginBottom: '4px' }}>Fecha de emisión</label>
                         <input type="date" value={fechaAntecedentes} onChange={e => setFechaAntecedentes(e.target.value)} style={{ width: '100%', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '6px', padding: '6px 10px', fontSize: '0.78rem', outline: 'none', color: '#1a3a5c', boxSizing: 'border-box' }} />
                       </div>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#8fa3b8', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={noTengoAntecedentes} onChange={e => setNoTengoAntecedentes(e.target.checked)} style={{ accentColor: '#2563eb' }} />
-                        No lo tengo ahora
-                      </label>
                     </div>
 
                     {/* Cédula de identidad */}
@@ -1153,10 +1148,6 @@ export default function CompletarPerfil() {
                           )}
                         </div>
                       </div>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: '#8fa3b8', cursor: 'pointer' }}>
-                        <input type="checkbox" checked={noTengoCedula} onChange={e => setNoTengoCedula(e.target.checked)} style={{ accentColor: '#2563eb' }} />
-                        No la tengo ahora
-                      </label>
                     </div>
                   </div>
                 </div>
