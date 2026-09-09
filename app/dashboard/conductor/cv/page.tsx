@@ -9,6 +9,7 @@ export default function CVPage() {
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [descargando, setDescargando] = useState(false)
+  const [subiendoFoto, setSubiendoFoto] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -34,6 +35,21 @@ export default function CVPage() {
     setDescargando(false)
   }
 
+  const cambiarFoto = async (file: File | undefined) => {
+    if (!file) return
+    setSubiendoFoto(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSubiendoFoto(false); return }
+    const ext = file.name.split('.').pop()
+    const path = `${user.id}/foto_perfil.${ext}`
+    const { error: uploadError } = await supabase.storage.from('documentos').upload(path, file, { upsert: true })
+    if (!uploadError) {
+      const { data: urlData } = supabase.storage.from('documentos').getPublicUrl(path)
+      await supabase.from('profiles').update({ foto_perfil_url: urlData.publicUrl }).eq('id', user.id)
+      setProfile((prev: any) => ({ ...prev, foto_perfil_url: urlData.publicUrl }))
+    }
+    setSubiendoFoto(false)
+  }
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#8fa3b8' }}>Cargando CV...</div>
 
   const nombreCompleto = `${profile?.nombre || ''} ${profile?.apellido || ''}`.trim() || 'Conductor Profesional'
@@ -42,6 +58,14 @@ export default function CVPage() {
   const equipos = Object.entries(profile?.equipos_detalle || {}).filter(([k]) => !['Otros-Camion','Otros-Maquinaria','Otros-Izaje','Otros-Especiales'].includes(k))
   const areasExp = profile?.areas_experiencia || []
   const anosExp = profile?.anos_experiencia || ''
+  const docsChecklist = [
+    { label: 'Hoja de vida', ok: !!profile?.doc_hoja_vida_url },
+    { label: 'Cert. de antecedentes', ok: !!profile?.doc_antecedentes_url },
+    { label: 'Licencias', ok: licencias.length > 0 },
+    { label: 'Cursos y certificados', ok: (profile?.docs_cursos_urls || []).length > 0 },
+    { label: 'Examen preocupacional', ok: !!profile?.doc_preocupacional_url },
+    { label: 'Cédula de identidad', ok: !!profile?.doc_cedula_frontal_url },
+  ]
 
   return (
     <div style={{ background: '#f4f7fa', minHeight: '100vh', padding: '24px' }}>
@@ -57,8 +81,14 @@ export default function CVPage() {
         {/* Header */}
         <div style={{ background: '#1a3a5c', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '18px', alignItems: 'center' }}>
-            <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', fontWeight: 800, color: 'white', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(255,255,255,0.2)' }}>
-              {profile?.foto_perfil_url ? <img src={profile.foto_perfil_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : iniciales}
+            <div style={{ position: 'relative', width: '72px', height: '72px', flexShrink: 0 }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', fontWeight: 800, color: 'white', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.2)' }}>
+                {subiendoFoto ? '...' : (profile?.foto_perfil_url ? <img src={profile.foto_perfil_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : iniciales)}
+              </div>
+              <label title="Cambiar foto" style={{ position: 'absolute', bottom: '-2px', right: '-2px', width: '24px', height: '24px', borderRadius: '50%', background: '#22c55e', border: '2px solid #1a3a5c', color: 'white', fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                E
+                <input type="file" accept=".jpg,.jpeg,.png" onChange={e => cambiarFoto(e.target.files?.[0])} style={{ display: 'none' }} />
+              </label>
             </div>
             <div>
               <h1 style={{ color: 'white', fontSize: '1.5rem', fontWeight: 800, margin: '0 0 2px' }}>{nombreCompleto}</h1>
@@ -130,8 +160,8 @@ export default function CVPage() {
 
             <div>
               <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#1a3a5c', letterSpacing: '0.10em', marginBottom: '10px', borderBottom: '1px solid #e8eef5', paddingBottom: '4px' }}>DOCUMENTACIÓN</div>
-              {['Hoja de vida', 'Cert. de antecedentes', 'Licencias', 'Cursos y certificados', 'Examen preocupacional', 'Cédula de identidad'].map(d => (
-                <div key={d} style={{ fontSize: '0.68rem', color: '#4b6080', marginBottom: '3px' }}>✓ {d}</div>
+              {docsChecklist.map(d => (
+                <div key={d.label} style={{ fontSize: '0.68rem', color: d.ok ? '#4b6080' : '#c2cad6', marginBottom: '3px' }}>{d.ok ? '✓' : '—'} {d.label}</div>
               ))}
             </div>
           </div>
@@ -143,27 +173,29 @@ export default function CVPage() {
             <div style={{ marginBottom: '18px' }}>
               <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#1a3a5c', letterSpacing: '0.10em', marginBottom: '10px', borderBottom: '1px solid #e8eef5', paddingBottom: '4px' }}>LICENCIAS</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                {(licencias.length > 0 ? licencias : ['—']).slice(0, 6).map((lic: string) => (
-                  <div key={lic} style={{ border: '1px solid #e8eef5', borderRadius: '4px', padding: '8px 10px' }}>
-                    <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>{lic}</div>
-                    <div style={{ color: '#8fa3b8', fontSize: '0.62rem', marginBottom: '4px' }}>Profesional</div>
-                    <div style={{ fontSize: '0.60rem', color: '#22c55e', fontWeight: 700 }}>Vigente</div>
-                    {profile?.licencias_vencimientos?.[lic] && <div style={{ fontSize: '0.60rem', color: '#8fa3b8' }}>Venc: {profile.licencias_vencimientos[lic]}</div>}
-                  </div>
-                ))}
+                {(licencias.length > 0 ? licencias : ['—']).slice(0, 6).map((lic: string) => {
+                  const venc = profile?.licencias_vencimientos?.[lic]
+                  const vencida = venc && new Date(venc) < new Date()
+                  return (
+                    <div key={lic} style={{ border: '1px solid #e8eef5', borderRadius: '4px', padding: '8px 10px' }}>
+                      <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>{lic}</div>
+                      <div style={{ color: '#8fa3b8', fontSize: '0.62rem', marginBottom: '4px' }}>Profesional</div>
+                      <div style={{ fontSize: '0.60rem', color: vencida ? '#e11d48' : '#22c55e', fontWeight: 700 }}>{vencida ? 'Vencida' : 'Vigente'}</div>
+                      {venc && <div style={{ fontSize: '0.60rem', color: '#8fa3b8' }}>Venc: {venc}</div>}
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
             {/* Experiencia laboral */}
             <div style={{ marginBottom: '18px' }}>
-              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#1a3a5c', letterSpacing: '0.10em', marginBottom: '10px', borderBottom: '1px solid #e8eef5', paddingBottom: '4px' }}>EXPERIENCIA LABORAL</div>
+              <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#1a3a5c', letterSpacing: '0.10em', marginBottom: '10px', borderBottom: '1px solid #e8eef5', paddingBottom: '4px' }}>EXPERIENCIA Y ÁREAS DE TRABAJO</div>
               <div style={{ padding: '10px 12px', border: '1px solid #e8eef5', borderRadius: '4px', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem' }}>Transportes del Norte SpA</div>
-                  <div style={{ fontSize: '0.68rem', color: '#8fa3b8' }}>2019 – 2024</div>
-                </div>
-                <div style={{ color: '#4b6080', fontSize: '0.70rem', marginBottom: '4px' }}>Conductor de Camión Tolva</div>
-                <div style={{ color: '#8fa3b8', fontSize: '0.65rem' }}>Transporte de áridos y materiales. Rutas nacionales, mantenciones básicas.</div>
+                <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.78rem', marginBottom: '6px' }}>{anosExp || 'Experiencia no especificada'}</div>
+                {areasExp.length > 0 && <div style={{ color: '#4b6080', fontSize: '0.70rem', marginBottom: '4px' }}><b>Áreas:</b> {areasExp.join(', ')}</div>}
+                {(profile?.tipos_trabajo || []).length > 0 && <div style={{ color: '#4b6080', fontSize: '0.70rem', marginBottom: '4px' }}><b>Tipo de trabajo:</b> {(profile.tipos_trabajo || []).join(', ')}</div>}
+                {(profile?.turnos_experiencia || []).length > 0 && <div style={{ color: '#8fa3b8', fontSize: '0.65rem' }}><b>Turnos:</b> {(profile.turnos_experiencia || []).join(', ')}</div>}
               </div>
             </div>
 
@@ -198,12 +230,11 @@ export default function CVPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div>
                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#1a3a5c', letterSpacing: '0.10em', marginBottom: '10px', borderBottom: '1px solid #e8eef5', paddingBottom: '4px' }}>CURSOS Y CERTIFICACIONES</div>
-                {['Manejo Defensivo', 'Carga Peligrosa (Clase 7)', 'Primeros Auxilios', 'Fatiga y Somnolencia', 'Trabajo en Altura', 'Prevención de Riesgos'].map((c, i) => (
-                  <div key={c} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ fontSize: '0.68rem', color: '#4b6080' }}>✓ {c}</div>
-                    <div style={{ fontSize: '0.62rem', color: '#8fa3b8' }}>{2024 - i}</div>
-                  </div>
-                ))}
+                {(profile?.docs_cursos_urls || []).length > 0 ? (
+                  <div style={{ fontSize: '0.68rem', color: '#4b6080' }}>✓ {(profile.docs_cursos_urls || []).length} documento(s) de cursos cargado(s)</div>
+                ) : (
+                  <div style={{ fontSize: '0.68rem', color: '#8fa3b8' }}>Sin cursos cargados aún.</div>
+                )}
               </div>
               <div>
                 <div style={{ fontSize: '0.62rem', fontWeight: 700, color: '#1a3a5c', letterSpacing: '0.10em', marginBottom: '10px', borderBottom: '1px solid #e8eef5', paddingBottom: '4px' }}>EXAMEN PREOCUPACIONAL</div>
