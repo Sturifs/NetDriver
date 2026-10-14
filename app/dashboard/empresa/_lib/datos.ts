@@ -8,7 +8,7 @@ export const RUTA = '/dashboard/empresa'
 // Contacto de NetDriver para planes y soporte (cambiar aquí si cambia)
 export const CORREO_SOPORTE = 'contacto@netdriver.cl'
 
-export const LICENCIAS = ['A1', 'A2', 'A3', 'A4', 'A5', 'B', 'C', 'D', 'E', 'F']
+export const LICENCIAS = ['A1', 'A2', 'A3', 'A4', 'A5', 'D', 'E', 'F'] // mismas clases que el perfil del conductor
 export const TIPOS_TRABAJO = ['Minería', 'Carga general', 'Transporte de pasajeros', 'Transporte de personal', 'Reparto', 'Granel', 'Forestal', 'Maquinaria pesada', 'Otro']
 export const TURNOS = ['Lunes a Viernes', 'Lunes a Sábado', 'Turnos 4x3', 'Turnos 7x7', 'Turnos 10x10', 'Turnos 14x14', 'Turnos Rotativos', 'Fin de semana', 'Por días']
 
@@ -93,6 +93,9 @@ export const rangoSueldo = (min?: number | null, max?: number | null) => {
   return 'A convenir'
 }
 
+export const sueldoEmpleo = (e: any) =>
+  e?.es_relampago ? (e.sueldo_min ? `${pesos(e.sueldo_min)} por día` : 'Pago a convenir') : rangoSueldo(e?.sueldo_min, e?.sueldo_max)
+
 export const fecha = (f?: string | null) => {
   if (!f) return '—'
   const d = new Date(f.length <= 10 ? f + 'T12:00:00' : f)
@@ -141,6 +144,16 @@ export const enlaceWhatsApp = (telefono?: string | null, mensaje = '') => {
   return `https://wa.me/${n}${mensaje ? '?text=' + encodeURIComponent(mensaje) : ''}`
 }
 
+// Áreas de experiencia del conductor (wizard) que corresponden a cada tipo de trabajo del empleo
+export const AREAS_POR_TIPO: Record<string, string[]> = {
+  'Minería': ['Minería'], 'Carga general': ['Transporte de carga'], 'Transporte de pasajeros': ['Transporte de pasajeros'],
+  'Transporte de personal': ['Transporte de pasajeros', 'Minería'], 'Reparto': ['Logística / Otros', 'Transporte de carga'],
+  'Granel': ['Transporte de carga'], 'Forestal': ['Forestal'], 'Maquinaria pesada': ['Construcción', 'Minería'],
+}
+export const AREAS_CONDUCTOR = ['Minería', 'Transporte de carga', 'Transporte de pasajeros', 'Construcción', 'Forestal', 'Agrícola', 'Logística / Otros']
+export const EXPERIENCIA = ['Menos de 1 año', '1 a 3 años', '3 a 5 años', '5 a 10 años', 'Más de 10 años']
+export const DISPONIBILIDAD = ['Inmediata', 'En 1 semana', 'En 2 semanas', 'En 1 mes o más', 'Actualmente trabajando']
+
 // Porcentaje de coincidencia entre un conductor y un empleo (licencia, región, tipo de trabajo)
 export const calcularMatch = (conductor: any, empleo: any) => {
   if (!conductor || !empleo) return null
@@ -151,12 +164,12 @@ export const calcularMatch = (conductor: any, empleo: any) => {
   if (empleo.region) {
     total += 30
     if (conductor.region === empleo.region) puntos += 30
-    else if (conductor.disponibilidad_fuera_region && conductor.disponibilidad_fuera_region !== 'No') puntos += 15
+    else if (conductor.disponibilidad_fuera_region === 'si') puntos += 15
   }
-  if (empleo.tipo_trabajo) {
+  if (empleo.tipo_trabajo && AREAS_POR_TIPO[empleo.tipo_trabajo]?.length) {
     total += 20
     const areas: string[] = [...(conductor.areas_experiencia || []), ...(conductor.tipos_trabajo || [])]
-    if (areas.some(a => a?.toLowerCase().includes(empleo.tipo_trabajo.toLowerCase().split(' ')[0]))) puntos += 20
+    if (AREAS_POR_TIPO[empleo.tipo_trabajo].some(a => areas.includes(a))) puntos += 20
   }
   return total ? Math.round((puntos / total) * 100) : null
 }

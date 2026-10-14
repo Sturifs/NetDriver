@@ -82,6 +82,8 @@ export default function LayoutEmpresa({ children }: { children: ReactNode }) {
   const buscar = () => {
     const q = busqueda.trim()
     router.push(`${RUTA}/busqueda${q ? '?q=' + encodeURIComponent(q) : ''}`)
+    // Si ya estamos en la búsqueda, avisar a la página para que aplique el texto
+    if (pathname === `${RUTA}/busqueda`) window.dispatchEvent(new CustomEvent('nd-buscar', { detail: q }))
   }
 
   if (cargando || !perfil) return (

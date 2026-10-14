@@ -38,21 +38,21 @@ export function PageHeader({ titulo, sub, children }: { titulo: ReactNode; sub?:
   )
 }
 
-type BtnProps = { children: ReactNode; onClick?: () => void; variante?: 'primario' | 'secundario' | 'peligro' | 'verde'; disabled?: boolean; style?: CSSProperties; title?: string; type?: 'button' | 'submit' }
-export function Btn({ children, onClick, variante = 'primario', disabled, style, title, type = 'button' }: BtnProps) {
+type BtnProps = { children: ReactNode; onClick?: () => void; href?: string; variante?: 'primario' | 'secundario' | 'peligro' | 'verde'; disabled?: boolean; style?: CSSProperties; title?: string; type?: 'button' | 'submit' }
+export function Btn({ children, onClick, href, variante = 'primario', disabled, style, title, type = 'button' }: BtnProps) {
   const v = {
     primario: { background: C.blue, color: 'white', border: `1px solid ${C.blue}` },
     secundario: { background: 'white', color: C.navy, border: `1px solid ${C.border}` },
     peligro: { background: 'white', color: C.red, border: `1px solid #f5c6c2` },
     verde: { background: '#22c55e', color: 'white', border: '1px solid #22c55e' },
   }[variante]
-  return (
-    <button type={type} title={title} onClick={onClick} disabled={disabled} style={{
-      ...v, padding: '9px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600,
-      cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.6 : 1, display: 'inline-flex',
-      alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', fontFamily: 'inherit', ...style,
-    }}>{children}</button>
-  )
+  const st: CSSProperties = {
+    ...v, padding: '9px 16px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600,
+    cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.6 : 1, display: 'inline-flex',
+    alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', fontFamily: 'inherit', textDecoration: 'none', ...style,
+  }
+  if (href && !disabled) return <a href={href} title={title} style={st} {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{children}</a>
+  return <button type={type} title={title} onClick={onClick} disabled={disabled} style={st}>{children}</button>
 }
 
 export function LinkBtn({ children, onClick, style }: { children: ReactNode; onClick?: () => void; style?: CSSProperties }) {

@@ -48,7 +48,7 @@ export function FilaPostulacion({ p, guardado, onGuardar, onCambio, onEntrevista
           {p.estado === 'nueva' && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: C.red }} title="Nueva" />}
         </div>
         <div style={{ fontSize: '0.8rem', color: C.muted }}>
-          {[(c.licencias || []).length ? 'Licencia ' + c.licencias.join(', ') : null, c.anos_experiencia ? `${c.anos_experiencia} años exp.` : null, c.comuna || c.region].filter(Boolean).join(' · ') || 'Perfil sin completar'}
+          {[(c.licencias || []).length ? 'Licencia ' + c.licencias.join(', ') : null, c.anos_experiencia ? `${c.anos_experiencia} exp.` : null, c.comuna || c.region].filter(Boolean).join(' · ') || 'Perfil sin completar'}
         </div>
         {mostrarEmpleo && p.empleo && <div style={{ fontSize: '0.78rem', color: C.blue, marginTop: '2px' }}>{p.empleo.es_relampago ? '⚡ ' : '💼 '}{p.empleo.titulo}</div>}
       </div>
