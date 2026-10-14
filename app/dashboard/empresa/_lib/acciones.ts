@@ -31,7 +31,7 @@ export function useGuardados(empresaId: string) {
       ? await supabase.from('conductores_guardados').delete().eq('empresa_id', empresaId).eq('conductor_id', conductorId)
       : await supabase.from('conductores_guardados').insert({ empresa_id: empresaId, conductor_id: conductorId })
     if (!error) {
-      setIds(prev => { const n = new Set(prev); guardado ? n.delete(conductorId) : n.add(conductorId); return n })
+      setIds(prev => { const n = new Set(prev); if (guardado) n.delete(conductorId); else n.add(conductorId); return n })
       return !guardado
     }
     return null
