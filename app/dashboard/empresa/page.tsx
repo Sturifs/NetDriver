@@ -1,375 +1,274 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../supabase'
+import { useEmpresa } from './_lib/contexto'
+import { SELECT_POSTULACION, useGuardados } from './_lib/acciones'
+import { FilaPostulacion, ModalEntrevista, TablaEmpleos } from './_lib/componentes'
+import { diasHasta, fecha, fechaHora, haceCuanto, iniciales, nombreConductor, RUTA } from './_lib/datos'
+import { Btn, C, Card, CardHeader, Cargando, Estrellas, LinkBtn, Metrica, Vacio } from './_lib/ui'
 
-export default function DashboardEmpresa() {
+const DIA = 86400000
+
+export default function InicioEmpresa() {
   const router = useRouter()
-  const [profile, setProfile] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [navActivo, setNavActivo] = useState('inicio')
+  const { userId, perfil, contadores } = useEmpresa()
+  const { guardados, alternarGuardado } = useGuardados(userId)
+  const [cargando, setCargando] = useState(true)
+  const [empleos, setEmpleos] = useState<any[]>([])
+  const [postulaciones, setPostulaciones] = useState<any[]>([])
+  const [entrevistas, setEntrevistas] = useState<any[]>([])
+  const [opiniones, setOpiniones] = useState<any[]>([])
+  const [periodo, setPeriodo] = useState(30)
+  const [modalEntrevista, setModalEntrevista] = useState<any>(null)
 
-  useEffect(() => {
-    const cargar = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/'); return }
-      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      if (data?.tipo !== 'empresa') { router.push('/'); return }
-      setProfile(data)
-      setLoading(false)
-    }
-    cargar()
-  }, [router])
+  const cargar = useCallback(async () => {
+    const [e, p, en, o] = await Promise.all([
+      supabase.from('empleos').select('*').eq('empresa_id', userId).order('created_at', { ascending: false }),
+      supabase.from('postulaciones').select(SELECT_POSTULACION).eq('empresa_id', userId).order('created_at', { ascending: false }),
+      supabase.from('entrevistas').select('*, conductor:profiles!entrevistas_conductor_id_fkey(nombre, apellido), empleo:empleos(titulo)').eq('empresa_id', userId).eq('estado', 'programada').gte('fecha_hora', new Date().toISOString()).order('fecha_hora'),
+      supabase.from('opiniones_empresa').select('*, conductor:profiles!opiniones_conductor_id_fkey(nombre, apellido)').eq('empresa_id', userId).order('created_at', { ascending: false }),
+    ])
+    setEmpleos(e.data || []); setPostulaciones(p.data || []); setEntrevistas(en.data || []); setOpiniones(o.data || [])
+    setCargando(false)
+  }, [userId])
+  useEffect(() => { cargar() }, [cargar])
 
-  const handleCerrarSesion = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
+  const conteos = useMemo(() => {
+    const m: Record<string, number> = {}
+    postulaciones.forEach(p => { m[p.empleo_id] = (m[p.empleo_id] || 0) + 1 })
+    return m
+  }, [postulaciones])
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f7fa' }}>
-      <p style={{ color: '#1a3a5c', fontFamily: 'sans-serif', fontSize: '1.1rem' }}>Cargando tu dashboard...</p>
-    </div>
-  )
+  const ahora = Date.now()
+  const semana = ahora - 7 * DIA
+  const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0)
+  const contratados = postulaciones.filter(p => p.estado === 'contratado')
+  const contratadosMes = contratados.filter(p => new Date(p.fecha_contratacion || p.updated_at).getTime() >= inicioMes.getTime())
+  const empleosActivos = empleos.filter(e => e.estado === 'activo')
+  const nuevasSemana = postulaciones.filter(p => new Date(p.created_at).getTime() >= semana).length
+  const empleosSemana = empleos.filter(e => new Date(e.created_at).getTime() >= semana).length
 
-  const navItems = [
-    { id: 'inicio', icono: '🏠', label: 'Inicio' },
-    { id: 'publicar', icono: '📢', label: 'Publicar Empleo' },
-    { id: 'empleos', icono: '💼', label: 'Mis Empleos' },
-    { id: 'postulaciones', icono: '📋', label: 'Postulaciones', badge: '23', badgeColor: '#e74c3c' },
-    { id: 'guardados', icono: '🔖', label: 'Conductores Guardados', badge: '12', badgeColor: '#2563eb' },
-    { id: 'busqueda', icono: '🔍', label: 'Búsqueda de Conductores', badge: 'Nuevo', badgeColor: '#8e44ad' },
-    { id: 'relampago', icono: '⚡', label: 'Pega Relámpago' },
-    { id: 'entrevistas', icono: '🤝', label: 'Entrevistas', badge: '8', badgeColor: '#e74c3c' },
-    { id: 'contrataciones', icono: '✅', label: 'Contrataciones' },
-    { id: 'planes', icono: '💳', label: 'Planes y Facturación' },
-    { id: 'reportes', icono: '📊', label: 'Reportes y Estadísticas' },
-    { id: 'opiniones', icono: '⭐', label: 'Opiniones y Calificaciones' },
-    { id: 'configuracion', icono: '⚙️', label: 'Configuración de Empresa' },
-    { id: 'usuarios', icono: '👥', label: 'Usuarios y Permisos' },
+  // Estadísticas del período
+  const desde = ahora - periodo * DIA
+  const delPeriodo = postulaciones.filter(p => new Date(p.created_at).getTime() >= desde)
+  const entrevistadosPeriodo = delPeriodo.filter(p => ['entrevista', 'contratado'].includes(p.estado)).length
+  const contratadosPeriodo = delPeriodo.filter(p => p.estado === 'contratado').length
+  const tramos = 8
+  const serie = Array.from({ length: tramos }, (_, i) => {
+    const ini = desde + (i * periodo * DIA) / tramos, fin = desde + ((i + 1) * periodo * DIA) / tramos
+    return { n: delPeriodo.filter(p => { const t = new Date(p.created_at).getTime(); return t >= ini && t < fin }).length, fecha: new Date(fin) }
+  })
+  const maxSerie = Math.max(4, ...serie.map(s => s.n))
+
+  // Opiniones
+  const promedio = opiniones.length ? opiniones.reduce((a, o) => a + o.puntaje, 0) / opiniones.length : 0
+  const distribucion = [5, 4, 3, 2, 1].map(n => [n, opiniones.length ? Math.round((opiniones.filter(o => o.puntaje === n).length / opiniones.length) * 100) : 0])
+
+  // Alertas generadas desde los datos reales
+  const alertas: { icono: string; texto: string; sub: string; color: string; ir: string }[] = []
+  const proximas48 = entrevistas.filter(e => new Date(e.fecha_hora).getTime() - ahora < 2 * DIA)
+  if (proximas48.length) alertas.push({ icono: '🤝', texto: `Tienes ${proximas48.length} entrevista${proximas48.length > 1 ? 's' : ''} en las próximas 48 horas`, sub: proximas48.map(e => `${nombreConductor(e.conductor)} · ${fechaHora(e.fecha_hora)}`).slice(0, 2).join(' — '), color: '#e8f0fe', ir: '/entrevistas' })
+  empleosActivos.filter(e => { const d = diasHasta(e.fecha_vencimiento); return d != null && d >= 0 && d <= 3 }).forEach(e => {
+    const d = diasHasta(e.fecha_vencimiento)!
+    alertas.push({ icono: '⏰', texto: `"${e.titulo}" está por vencer`, sub: d === 0 ? 'Vence hoy.' : `Vence en ${d} día${d > 1 ? 's' : ''}.`, color: '#fff8e1', ir: `/empleos/${e.id}` })
+  })
+  if (contadores.postulacionesNuevas) alertas.push({ icono: '📋', texto: `${contadores.postulacionesNuevas} postulación${contadores.postulacionesNuevas > 1 ? 'es' : ''} sin revisar`, sub: 'Revisa a los conductores que postularon.', color: '#e8f5e9', ir: '/postulaciones?estado=nueva' })
+  if (!perfil.descripcion_empresa || !perfil.rut_empresa) alertas.push({ icono: '🏢', texto: 'Completa el perfil de tu empresa', sub: 'Los conductores postulan más a empresas con perfil completo.', color: '#f3e8fd', ir: '/configuracion' })
+
+  const accesos = [
+    { icono: '🔍', titulo: 'Búsqueda avanzada de conductores', sub: 'Encuentra el perfil ideal', ir: '/busqueda' },
+    { icono: '📄', titulo: 'Plantillas de empleo', sub: 'Ahorra tiempo publicando', ir: '/publicar?plantillas=1' },
+    { icono: '⚡', titulo: 'Publicar Pega Relámpago', sub: 'Trabajos urgentes de pocos días', ir: '/publicar?relampago=1' },
+    { icono: '📈', titulo: 'Reportes de contratación', sub: 'Analiza tu rendimiento', ir: '/reportes' },
   ]
 
-  const empleosActivos = [
-    { puesto: 'Conductor A4 - Minería', tipo: 'Transporte de carga', lugar: 'Calama, II Región', postulaciones: 15, vencimiento: '20 May 2026', estado: 'Activo' },
-    { puesto: 'Conductor A5 - Ruta Norte', tipo: 'Transporte de carga', lugar: 'Antofagasta, II Región', postulaciones: 11, vencimiento: '18 May 2026', estado: 'Activo' },
-    { puesto: 'Conductor Profesional - Buses', tipo: 'Transporte de pasajeros', lugar: 'Copiapó, III Región', postulaciones: 8, vencimiento: '25 May 2026', estado: 'Activo' },
-    { puesto: 'Conductor A4 - Faena', tipo: 'Transporte de personal', lugar: 'Salamanca, IV Región', postulaciones: 6, vencimiento: '12 May 2026', estado: 'Activo' },
-  ]
-
-  const postulacionesRecientes = [
-    { nombre: 'José Martínez', licencia: 'Conductor A4', exp: '12 años exp.', lugar: 'Calama', match: 100, tiempo: 'Hace 2 horas', verificado: true },
-    { nombre: 'Luis Andaur', licencia: 'Conductor A5', exp: '8 años exp.', lugar: 'Antofagasta', match: 92, tiempo: 'Hace 5 horas', verificado: true },
-    { nombre: 'Diego Araya', licencia: 'Conductor Profesional', exp: '10 años exp.', lugar: 'Copiapó', match: 88, tiempo: 'Hace 1 día', verificado: true },
-  ]
-
-  const alertas = [
-    { icono: '🤝', texto: 'Tienes 8 entrevistas pendientes', sub: 'No olvides responder a los conductores.', tiempo: 'Hace 1 hora', color: '#e8f0fe' },
-    { icono: '⏰', texto: 'Tu empleo "Conductor A4 - Minería" está por vencer', sub: 'Vence en 2 días.', tiempo: 'Hace 3 horas', color: '#fff8e1' },
-    { icono: '✅', texto: 'Nuevo conductor verificado en tu zona', sub: 'Revisa perfiles que podrían interesarte.', tiempo: 'Hace 5 horas', color: '#e8f5e9' },
-  ]
-
-  const accesosRapidos = [
-    { icono: '🔍', titulo: 'Búsqueda avanzada de conductores', sub: 'Encuentra el perfil ideal', badge: null },
-    { icono: '📄', titulo: 'Plantillas de empleo', sub: 'Ahorra tiempo publicando', badge: null },
-    { icono: '🗃️', titulo: 'Base de datos de conductores', sub: 'Accede a conductores verificados', badge: 'Nuevo' },
-    { icono: '📈', titulo: 'Reportes de contratación', sub: 'Analiza tu rendimiento', badge: null },
-  ]
+  if (cargando) return <Cargando texto="Cargando tu resumen..." />
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f4f7fa', fontFamily: 'sans-serif' }}>
-      <div style={{ width: '230px', minWidth: '230px', background: '#020D24', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, height: '100vh', overflowY: 'auto', zIndex: 50 }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '10px', background: '#020D24' }}>
-          <img src="/NetDriver_Logo.png" alt="NetDriver" onClick={() => router.push('/')} style={{ height: '68px', width: '220px', objectFit: 'contain', cursor: 'pointer' }} />
-        </div>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ width: '52px', height: '52px', borderRadius: '10px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px', flexShrink: 0 }}>
-            <span style={{ color: '#e67e22', fontWeight: 900, fontSize: '1rem', letterSpacing: '-1px' }}>NTS</span>
+    <div className="nd-cols">
+      <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', gap: '12px', flexWrap: 'wrap' }}>
+          <div>
+            <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: C.navy, margin: '0 0 4px' }}>¡Bienvenido, {perfil.nombre}! 👋</h1>
+            <p style={{ color: C.muted, fontSize: '0.9rem', margin: 0 }}>Gestiona tus procesos de contratación y encuentra a los mejores conductores.</p>
           </div>
-          <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{profile?.nombre_empresa || 'Mi Empresa'}</div>
-          <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', margin: '2px 0 8px' }}>Empresa de Transporte</div>
-          <span style={{ background: 'rgba(39,174,96,0.15)', border: '1px solid rgba(39,174,96,0.4)', color: '#2ecc71', fontSize: '0.7rem', padding: '2px 10px', borderRadius: '20px' }}>✓ Empresa verificada</span>
-        </div>
-        <nav style={{ flex: 1, padding: '8px 0' }}>
-          {navItems.map(item => (
-            <button key={item.id} onClick={() => setNavActivo(item.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 20px', background: navActivo === item.id ? 'rgba(37,99,235,0.2)' : 'transparent', borderLeft: navActivo === item.id ? '3px solid #2563eb' : '3px solid transparent', border: 'none', color: navActivo === item.id ? 'white' : 'rgba(255,255,255,0.55)', fontSize: '0.82rem', cursor: 'pointer', textAlign: 'left' }}>
-              <span>{item.icono}</span>
-              <span style={{ flex: 1 }}>{item.label}</span>
-              {item.badge && <span style={{ background: item.badgeColor, color: 'white', fontSize: '0.62rem', padding: '1px 7px', borderRadius: '10px' }}>{item.badge}</span>}
-            </button>
-          ))}
-        </nav>
-        <div style={{ margin: '12px', background: 'rgba(255,193,7,0.08)', border: '1px solid rgba(255,193,7,0.25)', borderRadius: '10px', padding: '14px' }}>
-          <div style={{ color: '#f39c12', fontWeight: 700, fontSize: '0.88rem', marginBottom: '4px' }}>👑 Plan Empresarial Pro</div>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.76rem', lineHeight: 1.5, marginBottom: '10px' }}>Publica empleos ilimitados y accede a filtros avanzados.</p>
-          <button style={{ width: '100%', background: 'transparent', border: '1px solid #f39c12', color: '#f39c12', padding: '7px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>Ver mi plan</button>
-        </div>
-        <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>Nuestro equipo está para apoyarte.</div>
-          <button style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', padding: '7px', borderRadius: '6px', fontSize: '0.76rem', cursor: 'pointer' }}>🎧 Contactar soporte</button>
-        </div>
-      </div>
-
-      <div style={{ marginLeft: '230px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ background: 'white', borderBottom: '1px solid #e8eef5', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', gap: '16px', position: 'sticky', top: 0, zIndex: 40 }}>
-          <input placeholder="Buscar conductores por cargo, licencia, experiencia..." style={{ flex: 1, maxWidth: '440px', background: '#f4f7fa', border: '1px solid #e8eef5', borderRadius: '8px', padding: '8px 14px', fontSize: '0.88rem', outline: 'none', color: '#1a3a5c' }} />
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem' }}>
-                {profile?.nombre?.[0]}{profile?.apellido?.[0]}
-              </div>
-              <div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1a3a5c' }}>{profile?.nombre} {profile?.apellido}</div>
-                <div style={{ fontSize: '0.75rem', color: '#8fa3b8' }}>Administrador</div>
-              </div>
-            </div>
-            <button onClick={handleCerrarSesion} style={{ padding: '7px 16px', borderRadius: '6px', background: 'transparent', border: '1px solid #e8eef5', color: '#8fa3b8', fontSize: '0.8rem', cursor: 'pointer' }}>Salir</button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <Btn variante="secundario" onClick={() => router.push(`${RUTA}/busqueda`)}>👤 Ir a búsqueda avanzada</Btn>
+            <Btn onClick={() => router.push(`${RUTA}/publicar`)}>+ Publicar empleo</Btn>
           </div>
         </div>
 
-        <div style={{ flex: 1, padding: '28px', display: 'flex', gap: '24px' }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-              <div>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1a3a5c', marginBottom: '4px' }}>¡Bienvenido, {profile?.nombre}! 👋</h1>
-                <p style={{ color: '#8fa3b8', fontSize: '0.9rem' }}>Gestiona tus procesos de contratación y encuentra a los mejores conductores.</p>
-              </div>
-              <button style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f4f7fa', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '9px 18px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>👤 Ir a búsqueda avanzada</button>
-            </div>
+        <div className="nd-grid-4" style={{ marginBottom: '28px' }}>
+          <Metrica icono="💼" label="Empleos activos" valor={empleosActivos.length} sub={empleosSemana ? `+${empleosSemana} esta semana` : 'Sin nuevos esta semana'} color={C.blue} bg="#e8f0fe" onClick={() => router.push(`${RUTA}/empleos`)} />
+          <Metrica icono="📋" label="Postulaciones nuevas" valor={contadores.postulacionesNuevas} sub={`${nuevasSemana} recibidas esta semana`} color={C.green} bg="#e8f5e9" onClick={() => router.push(`${RUTA}/postulaciones?estado=nueva`)} />
+          <Metrica icono="🤝" label="Entrevistas pendientes" valor={entrevistas.length} sub={proximas48.length ? `${proximas48.length} en las próximas 48 h` : 'Ninguna en las próximas 48 h'} color={C.orange} bg="#fef3e2" onClick={() => router.push(`${RUTA}/entrevistas`)} />
+          <Metrica icono="✅" label="Contrataciones este mes" valor={contratadosMes.length} sub={`${contratados.length} en total`} color={C.purple} bg="#f3e8fd" onClick={() => router.push(`${RUTA}/contrataciones`)} />
+        </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
-              {[
-                { icono: '💼', label: 'Empleos activos', valor: '14', cambio: '+2 desde la semana pasada', color: '#2563eb', bg: '#e8f0fe' },
-                { icono: '📋', label: 'Postulaciones nuevas', valor: '23', cambio: '+8 desde la semana pasada', color: '#27ae60', bg: '#e8f5e9' },
-                { icono: '🤝', label: 'Entrevistas pendientes', valor: '8', cambio: '+2 desde la semana pasada', color: '#e67e22', bg: '#fef3e2' },
-                { icono: '✅', label: 'Contrataciones este mes', valor: '5', cambio: '+1 desde el mes pasado', color: '#8e44ad', bg: '#f3e8fd' },
-              ].map(m => (
-                <div key={m.label} style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>{m.icono}</div>
-                    <span style={{ fontSize: '0.82rem', color: '#8fa3b8' }}>{m.label}</span>
-                  </div>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: m.color, marginBottom: '4px' }}>{m.valor}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#8fa3b8' }}>{m.cambio}</div>
-                </div>
-              ))}
-            </div>
+        <Card padding="0" style={{ marginBottom: '24px', overflow: 'hidden' }}>
+          <CardHeader titulo="Mis empleos activos" accion="Ver todos" onAccion={() => router.push(`${RUTA}/empleos`)} />
+          {empleosActivos.length
+            ? <TablaEmpleos empleos={empleosActivos.slice(0, 5)} conteos={conteos} onCambio={cargar} />
+            : <Vacio icono="💼" titulo="Aún no tienes empleos activos" texto="Publica tu primer empleo y empieza a recibir postulaciones de conductores verificados." />}
+          <div style={{ padding: '14px 20px' }}>
+            <button onClick={() => router.push(`${RUTA}/publicar`)} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: `1px dashed ${C.border}`, color: C.blue, padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', width: '100%', justifyContent: 'center' }}>+ Publicar nuevo empleo</button>
+          </div>
+        </Card>
 
-            <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e8eef5', marginBottom: '24px', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #f4f7fa' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a3a5c' }}>Mis empleos activos</h2>
-                <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todos</button>
-              </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f4f7fa' }}>
-                    {['Puesto', 'Ubicación', 'Postulaciones', 'Vencimiento', 'Estado', 'Acciones'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.72rem', fontWeight: 700, color: '#8fa3b8', textTransform: 'uppercase' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {empleosActivos.map((e, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #f4f7fa' }}>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: 600, color: '#1a3a5c', fontSize: '0.88rem' }}>{e.puesto}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>{e.tipo}</div>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: '0.85rem', color: '#8fa3b8' }}>📍 {e.lugar}</td>
-                      <td style={{ padding: '12px 16px', fontSize: '0.88rem', fontWeight: 700, color: '#2563eb' }}>{e.postulaciones}</td>
-                      <td style={{ padding: '12px 16px', fontSize: '0.82rem', color: e.vencimiento === '12 May 2026' ? '#e74c3c' : '#8fa3b8', fontWeight: e.vencimiento === '12 May 2026' ? 700 : 400 }}>{e.vencimiento}</td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ background: '#e8f5e9', color: '#1b5e20', fontSize: '0.75rem', fontWeight: 600, padding: '3px 10px', borderRadius: '10px' }}>{e.estado}</span>
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>👁</button>
-                          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>✏️</button>
-                          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>⋯</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div style={{ padding: '14px 20px' }}>
-                <button style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: '1px dashed #e8eef5', color: '#2563eb', padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', width: '100%', justifyContent: 'center' }}>+ Publicar nuevo empleo</button>
-              </div>
+        <Card padding="0" style={{ marginBottom: '24px', overflow: 'hidden' }}>
+          <CardHeader titulo="Postulaciones recientes" accion="Ver todas" onAccion={() => router.push(`${RUTA}/postulaciones`)} />
+          {postulaciones.length
+            ? postulaciones.slice(0, 4).map(p => (
+              <FilaPostulacion key={p.id} p={p} guardado={guardados.has(p.conductor_id)} onGuardar={() => alternarGuardado(p.conductor_id)} onCambio={cargar} onEntrevista={() => setModalEntrevista(p)} />
+            ))
+            : <Vacio icono="📋" titulo="Todavía no hay postulaciones" texto={empleosActivos.length ? 'Cuando un conductor postule a tus empleos, aparecerá aquí.' : 'Publica un empleo para empezar a recibir postulaciones.'} />}
+          {postulaciones.length > 0 && (
+            <div style={{ padding: '12px 20px', textAlign: 'center' }}>
+              <LinkBtn onClick={() => router.push(`${RUTA}/postulaciones`)}>Ver todas las postulaciones ({postulaciones.length})</LinkBtn>
             </div>
+          )}
+        </Card>
 
-            <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e8eef5', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #f4f7fa' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a3a5c' }}>Postulaciones recientes</h2>
-                <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todas</button>
-              </div>
-              {postulacionesRecientes.map((p, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 20px', borderBottom: i < postulacionesRecientes.length - 1 ? '1px solid #f4f7fa' : 'none' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: ['#2563eb', '#27ae60', '#e67e22'][i], display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0 }}>
-                    {p.nombre.split(' ').map((n: string) => n[0]).join('')}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                      <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.92rem' }}>{p.nombre}</span>
-                      {p.verificado && <span style={{ color: '#2563eb', fontSize: '0.85rem' }}>✓</span>}
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: '#8fa3b8' }}>{p.licencia} · {p.exp} · {p.lugar}</div>
-                  </div>
-                  <span style={{ background: p.match === 100 ? '#e8f5e9' : p.match >= 90 ? '#e8f0fe' : '#fff8e1', color: p.match === 100 ? '#1b5e20' : p.match >= 90 ? '#1a3a5c' : '#92400e', fontSize: '0.78rem', fontWeight: 700, padding: '3px 10px', borderRadius: '10px' }}>{p.match}% Match</span>
-                  <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>{p.tiempo}</span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>👁</button>
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>💬</button>
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem' }}>⭐</button>
-                  </div>
-                </div>
-              ))}
-              <div style={{ padding: '12px 20px', textAlign: 'center' }}>
-                <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todas las postulaciones</button>
-              </div>
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e8eef5', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#1a3a5c' }}>Opiniones de conductores</h2>
-                <button style={{ background: 'transparent', border: 'none', color: '#2563eb', fontSize: '0.85rem', cursor: 'pointer' }}>Ver todas</button>
-              </div>
-              <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+        <Card style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, color: C.navy, margin: 0 }}>Opiniones de conductores</h2>
+            <LinkBtn onClick={() => router.push(`${RUTA}/opiniones`)}>Ver todas</LinkBtn>
+          </div>
+          {opiniones.length === 0
+            ? <Vacio icono="⭐" titulo="Aún no tienes opiniones" texto="Los conductores que contrates a través de NetDriver podrán calificar a tu empresa." />
+            : (
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                 <div style={{ textAlign: 'center', minWidth: '80px' }}>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1a3a5c' }}>4.7</div>
-                  <div style={{ color: '#f39c12', fontSize: '1.1rem' }}>★★★★½</div>
-                  <div style={{ fontSize: '0.75rem', color: '#8fa3b8', marginTop: '4px' }}>128 opiniones</div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: C.navy }}>{promedio.toFixed(1)}</div>
+                  <Estrellas valor={promedio} size="1.1rem" />
+                  <div style={{ fontSize: '0.75rem', color: C.muted, marginTop: '4px' }}>{opiniones.length} opinion{opiniones.length > 1 ? 'es' : ''}</div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  {[['5 estrellas', 78], ['4 estrellas', 16], ['3 estrellas', 4], ['2 estrellas', 1], ['1 estrella', 1]].map(([label, pct]) => (
-                    <div key={label as string} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '0.78rem', color: '#8fa3b8', width: '70px' }}>{label}</span>
-                      <div style={{ flex: 1, height: '6px', background: '#f4f7fa', borderRadius: '3px' }}>
-                        <div style={{ width: `${pct}%`, height: '6px', background: '#2563eb', borderRadius: '3px' }} />
-                      </div>
-                      <span style={{ fontSize: '0.78rem', color: '#8fa3b8', width: '30px' }}>{pct}%</span>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  {distribucion.map(([n, pct]) => (
+                    <div key={n} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.78rem', color: C.muted, width: '70px' }}>{n} estrella{n > 1 ? 's' : ''}</span>
+                      <div style={{ flex: 1, height: '6px', background: C.bg, borderRadius: '3px' }}><div style={{ width: `${pct}%`, height: '6px', background: C.blue, borderRadius: '3px' }} /></div>
+                      <span style={{ fontSize: '0.78rem', color: C.muted, width: '34px' }}>{pct}%</span>
                     </div>
                   ))}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', flex: 1 }}>
-                  {[
-                    { nombre: 'Pedro González', rating: '★★★★★', texto: 'Excelente empresa, buenas condiciones y cumplen con lo que ofrecen.', tiempo: 'Hace 3 días' },
-                    { nombre: 'Verónica Soto', rating: '★★★★★', texto: 'Muy buena experiencia trabajando con Transportes Del Norte.', tiempo: 'Hace 1 semana' },
-                  ].map((op, i) => (
-                    <div key={i} style={{ background: '#f4f7fa', borderRadius: '10px', padding: '14px' }}>
-                      <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.88rem', marginBottom: '2px' }}>{op.nombre}</div>
-                      <div style={{ color: '#f39c12', fontSize: '0.85rem', marginBottom: '6px' }}>{op.rating}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#8fa3b8', lineHeight: 1.5, marginBottom: '6px' }}>{op.texto}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#8fa3b8' }}>{op.tiempo}</div>
+                <div className="nd-grid-2" style={{ flex: 1, minWidth: '240px' }}>
+                  {opiniones.slice(0, 2).map(op => (
+                    <div key={op.id} style={{ background: C.bg, borderRadius: '10px', padding: '14px' }}>
+                      <div style={{ fontWeight: 700, color: C.navy, fontSize: '0.88rem', marginBottom: '2px' }}>{nombreConductor(op.conductor)}</div>
+                      <Estrellas valor={op.puntaje} size="0.85rem" />
+                      <div style={{ fontSize: '0.8rem', color: C.muted, lineHeight: 1.5, margin: '6px 0' }}>{op.comentario || 'Sin comentario'}</div>
+                      <div style={{ fontSize: '0.75rem', color: C.muted }}>{haceCuanto(op.created_at)}</div>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div style={{ width: '380px', minWidth: '380px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem' }}>Perfil de la empresa</span>
-                <span style={{ color: '#2563eb', fontSize: '0.8rem', cursor: 'pointer' }}>Ver perfil público</span>
-              </div>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'white', border: '1px solid #e8eef5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#e67e22', fontWeight: 900, fontSize: '0.95rem', letterSpacing: '-1px' }}>NTS</span>
-              </div>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.92rem' }}>{profile?.nombre_empresa || profile?.nombre}</div>
-                  <span style={{ background: 'rgba(39,174,96,0.1)', color: '#27ae60', fontSize: '0.7rem', padding: '1px 8px', borderRadius: '10px' }}>✓ Empresa verificada</span>
-                  <div style={{ color: '#f39c12', fontSize: '0.85rem', marginTop: '4px' }}>★★★★½ <span style={{ color: '#8fa3b8', fontSize: '0.78rem' }}>(128 opiniones)</span></div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-                <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>🚚 Transporte y Logística</span>
-                <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>📍 Antofagasta, II Región</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', textAlign: 'center', background: '#f4f7fa', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-                {[['Feb 2023', 'Miembro desde'], ['47', 'Empleos publicados'], ['32', 'Contrataciones']].map(([val, label]) => (
-                  <div key={label}>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1a3a5c' }}>{val}</div>
-                    <div style={{ fontSize: '0.7rem', color: '#8fa3b8', marginTop: '2px' }}>{label}</div>
-                  </div>
-                ))}
-              </div>
-              <button style={{ width: '100%', background: 'transparent', border: '1px solid #e8eef5', color: '#1a3a5c', padding: '8px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>✏️ Editar perfil de empresa</button>
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
-              <div style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem', marginBottom: '14px' }}>Accesos rápidos</div>
-              {accesosRapidos.map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: i < accesosRapidos.length - 1 ? '1px solid #f4f7fa' : 'none', cursor: 'pointer' }}>
-                  <span style={{ fontSize: '1.2rem' }}>{a.icono}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1a3a5c' }}>{a.titulo}</span>
-                      {a.badge && <span style={{ background: '#8e44ad', color: 'white', fontSize: '0.62rem', padding: '1px 6px', borderRadius: '8px' }}>{a.badge}</span>}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#8fa3b8' }}>{a.sub}</div>
-                  </div>
-                  <span style={{ color: '#8fa3b8', fontSize: '1rem' }}>›</span>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem' }}>Estadísticas de contratación</span>
-                <span style={{ fontSize: '0.78rem', color: '#8fa3b8' }}>Este mes ▾</span>
-              </div>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <svg viewBox="0 0 180 100" style={{ width: '100%' }}>
-                    <line x1="30" y1="5" x2="30" y2="85" stroke="#e8eef5" strokeWidth="1"/>
-                    <line x1="30" y1="85" x2="178" y2="85" stroke="#e8eef5" strokeWidth="1"/>
-                    {[20,15,10,5,0].map((v, i) => (
-                      <text key={v} x="25" y={10 + i*19} fontSize="7" fill="#8fa3b8" textAnchor="end">{v}</text>
-                    ))}
-                    <defs>
-                      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15"/>
-                        <stop offset="100%" stopColor="#2563eb" stopOpacity="0"/>
-                      </linearGradient>
-                    </defs>
-                    <polygon points="32,80 52,70 72,72 92,60 112,57 132,40 152,45 172,38 172,85 32,85" fill="url(#areaGrad)"/>
-                    <polyline points="32,80 52,70 72,72 92,60 112,57 132,40 152,45 172,38" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    {[[32,80],[52,70],[72,72],[92,60],[112,57],[132,40],[152,45],[172,38]].map(([x,y],i) => (
-                      <circle key={i} cx={x} cy={y} r="3" fill="white" stroke="#2563eb" strokeWidth="2"/>
-                    ))}
-                    {['1 May','5 May','10 May','15 May','20 May','25 May','31 May'].map((d,i) => (
-                      <text key={d} x={32+i*24} y="95" fontSize="6" fill="#8fa3b8" textAnchor="middle">{d}</text>
-                    ))}
-                  </svg>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '120px' }}>
-                  {[['Postulaciones', '87'], ['Entrevistas', '18'], ['Contrataciones', '5'], ['Tasa de conversión', '5.7%']].map(([label, val]) => (
-                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#8fa3b8' }}>{label}</span>
-                      <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1a3a5c' }}>{val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ background: 'white', borderRadius: '12px', padding: '18px', border: '1px solid #e8eef5' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <span style={{ fontWeight: 700, color: '#1a3a5c', fontSize: '0.95rem' }}>Alertas y notificaciones</span>
-                <span style={{ color: '#2563eb', fontSize: '0.8rem', cursor: 'pointer' }}>Ver todas</span>
-              </div>
-              {alertas.map((a, i) => (
-                <div key={i} style={{ background: a.color, borderRadius: '8px', padding: '10px 12px', marginBottom: '10px' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1a3a5c', marginBottom: '4px' }}>{a.icono} {a.texto}</div>
-                  <div style={{ fontSize: '0.78rem', color: '#8fa3b8', marginBottom: '4px' }}>{a.sub}</div>
-                  <div style={{ fontSize: '0.72rem', color: '#8fa3b8' }}>{a.tiempo}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+            )}
+        </Card>
       </div>
+
+      <div className="nd-aside">
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <span style={{ fontWeight: 700, color: C.navy, fontSize: '0.95rem' }}>Perfil de la empresa</span>
+            <LinkBtn onClick={() => router.push(`${RUTA}/perfil`)} style={{ fontSize: '0.8rem' }}>Ver perfil público</LinkBtn>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '10px', background: 'white', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+              {perfil.logo_url ? <img src={perfil.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <span style={{ color: C.orange, fontWeight: 900, fontSize: '0.95rem' }}>{iniciales(perfil.nombre_empresa)}</span>}
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: C.navy, fontSize: '0.92rem' }}>{perfil.nombre_empresa || perfil.nombre}</div>
+              {opiniones.length > 0
+                ? <div style={{ fontSize: '0.85rem', marginTop: '4px' }}><Estrellas valor={promedio} size="0.85rem" /> <span style={{ color: C.muted, fontSize: '0.78rem' }}>({opiniones.length})</span></div>
+                : <div style={{ fontSize: '0.78rem', color: C.muted, marginTop: '4px' }}>Sin opiniones aún</div>}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '14px' }}>
+            <span style={{ fontSize: '0.78rem', color: C.muted }}>🚚 {perfil.rubro || 'Transporte y Logística'}</span>
+            {(perfil.comuna || perfil.region) && <span style={{ fontSize: '0.78rem', color: C.muted }}>📍 {[perfil.comuna, perfil.region].filter(Boolean).join(', ')}</span>}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', textAlign: 'center', background: C.bg, borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+            {[[perfil.created_at ? fecha(perfil.created_at).replace(/^\d+ /, '') : '—', 'Miembro desde'], [empleos.length, 'Empleos publicados'], [contratados.length, 'Contrataciones']].map(([val, label]) => (
+              <div key={label as string}>
+                <div style={{ fontSize: '0.95rem', fontWeight: 700, color: C.navy }}>{val}</div>
+                <div style={{ fontSize: '0.7rem', color: C.muted, marginTop: '2px' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+          <Btn variante="secundario" onClick={() => router.push(`${RUTA}/configuracion`)} style={{ width: '100%', justifyContent: 'center' }}>✏️ Editar perfil de empresa</Btn>
+        </Card>
+
+        <Card>
+          <div style={{ fontWeight: 700, color: C.navy, fontSize: '0.95rem', marginBottom: '8px' }}>Accesos rápidos</div>
+          {accesos.map((a, i) => (
+            <div key={a.titulo} onClick={() => router.push(RUTA + a.ir)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: i < accesos.length - 1 ? `1px solid ${C.bg}` : 'none', cursor: 'pointer' }}>
+              <span style={{ fontSize: '1.2rem' }}>{a.icono}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.navy }}>{a.titulo}</div>
+                <div style={{ fontSize: '0.75rem', color: C.muted }}>{a.sub}</div>
+              </div>
+              <span style={{ color: C.muted, fontSize: '1rem' }}>›</span>
+            </div>
+          ))}
+        </Card>
+
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <span style={{ fontWeight: 700, color: C.navy, fontSize: '0.95rem' }}>Estadísticas de contratación</span>
+            <select value={periodo} onChange={e => setPeriodo(Number(e.target.value))} style={{ fontSize: '0.78rem', color: C.navy, border: `1px solid ${C.border}`, borderRadius: '6px', padding: '3px 6px', background: 'white' }}>
+              <option value={7}>Últimos 7 días</option><option value={30}>Últimos 30 días</option><option value={90}>Últimos 90 días</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <svg viewBox="0 0 180 100" style={{ width: '100%' }} role="img" aria-label="Postulaciones recibidas en el período">
+                <line x1="22" y1="5" x2="22" y2="85" stroke={C.border} strokeWidth="1" />
+                <line x1="22" y1="85" x2="178" y2="85" stroke={C.border} strokeWidth="1" />
+                {[maxSerie, Math.round(maxSerie / 2), 0].map((v, i) => <text key={i} x="18" y={9 + i * 38} fontSize="7" fill={C.muted} textAnchor="end">{v}</text>)}
+                {(() => {
+                  const pts = serie.map((s, i) => [28 + i * (146 / (tramos - 1)), 83 - (s.n / maxSerie) * 76])
+                  return (<>
+                    <polygon points={`${pts.map(p => p.join(',')).join(' ')} ${pts[pts.length - 1][0]},85 ${pts[0][0]},85`} fill="rgba(37,99,235,0.1)" />
+                    <polyline points={pts.map(p => p.join(',')).join(' ')} fill="none" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    {pts.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.6" fill="white" stroke={C.blue} strokeWidth="1.6"><title>{`${serie[i].n} postulaciones hasta ${fecha(serie[i].fecha.toISOString())}`}</title></circle>)}
+                    {[0, Math.floor(tramos / 2), tramos - 1].map(i => <text key={i} x={pts[i][0]} y="96" fontSize="6" fill={C.muted} textAnchor="middle">{serie[i].fecha.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}</text>)}
+                  </>)
+                })()}
+              </svg>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '120px' }}>
+              {[['Postulaciones', delPeriodo.length], ['Entrevistas', entrevistadosPeriodo], ['Contrataciones', contratadosPeriodo], ['Conversión', delPeriodo.length ? ((contratadosPeriodo / delPeriodo.length) * 100).toFixed(1) + '%' : '—']].map(([label, val]) => (
+                <div key={label as string} style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+                  <span style={{ fontSize: '0.8rem', color: C.muted }}>{label}</span>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 700, color: C.navy }}>{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <LinkBtn onClick={() => router.push(`${RUTA}/reportes`)} style={{ marginTop: '10px', fontSize: '0.8rem' }}>Ver reporte completo →</LinkBtn>
+        </Card>
+
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <span style={{ fontWeight: 700, color: C.navy, fontSize: '0.95rem' }}>Alertas y notificaciones</span>
+            <LinkBtn onClick={() => router.push(`${RUTA}/notificaciones`)} style={{ fontSize: '0.8rem' }}>Ver todas</LinkBtn>
+          </div>
+          {alertas.length === 0
+            ? <div style={{ fontSize: '0.85rem', color: C.muted, padding: '8px 0' }}>✨ Todo al día. No tienes alertas pendientes.</div>
+            : alertas.slice(0, 4).map((a, i) => (
+              <div key={i} onClick={() => router.push(RUTA + a.ir)} style={{ background: a.color, borderRadius: '8px', padding: '10px 12px', marginBottom: '10px', cursor: 'pointer' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.navy, marginBottom: '4px' }}>{a.icono} {a.texto}</div>
+                <div style={{ fontSize: '0.78rem', color: C.muted }}>{a.sub}</div>
+              </div>
+            ))}
+        </Card>
+      </div>
+
+      {modalEntrevista && (
+        <ModalEntrevista abierto onCerrar={() => setModalEntrevista(null)} conductor={modalEntrevista.conductor} postulacion={modalEntrevista} onListo={cargar} />
+      )}
     </div>
   )
 }
